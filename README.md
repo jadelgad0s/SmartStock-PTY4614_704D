@@ -206,9 +206,12 @@ SmartStock-PTY4614_704D/
 │   │   ├── 1.4_APT122_FormativaFase1.docx
 │   │   └── 1.5_GuiaEstudiante_Fase1_Definicion...
 │   └── Evidencias Individuales/
-│       ├── Díaz_Iván_1.1_APT122_AutoevaluacionCompetencias...
-│       ├── Díaz_Iván_1.2_APT122_DiarioReflexion...
-│       └── Díaz_Iván_1.3_APT122_Autoevaluacion...
+│       ├── Díaz_Iván_1.1_APT122_AutoevaluacionCompetenciasFase1.docx
+│       ├── Díaz_Iván_1.2_APT122_DiarioReflexionFase1.docx
+│       ├── Díaz_Iván_1.3_APT122_AutoevaluaciónFase1.docx
+│       ├── Valenzuela_Joaquín_1.1_APT122_AutoevaluacionCompetenciasFase1.docx
+│       ├── Valenzuela_Joaquín_1.2_APT122_DiarioReflexionFase1.docx
+│       └── Valenzuela_Joaquín_1.3_APT122_AutoevaluaciónFase1.docx
 ├── Fase 2/
 │   ├── Evidencias Grupales/
 │   ├── Evidencias Individuales/
