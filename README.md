@@ -65,8 +65,8 @@ Muchas PYMEs gestionan su inventario de forma manual mediante planillas Excel o 
 │                                 │  └────────────┘  └──────────────────┘  │  │
 │                                 │                                        │  │
 │                                 │  ┌────────────┐  ┌──────────────────┐  │  │
-│                                 │  │  Bodegas    │  │   Ubicaciones   │  │  │
-│                                 │  │  Múltiples  │  │   Pasillos      │  │  │
+│                                 │  │  Bodegas   │  │   Ubicaciones    │  │  │
+│                                 │  │  Múltiples │  │   Pasillos       │  │  │
 │                                 │  │            │  │   Estanterías    │  │  │
 │                                 │  └────────────┘  │   Niveles        │  │  │
 │                                 │                  └──────────────────┘  │  │
