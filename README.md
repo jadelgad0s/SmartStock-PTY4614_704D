@@ -215,12 +215,17 @@ SmartStock-PTY4614_704D/
 │       ├── FIGUEROA_ANGELO_1.1_APT122_AutoevaluacionCompetenciasFase1.docx
 │       ├── FIGUEROA_ANGELO_1.2_APT122_DiarioReflexionFase1.docx
 │       ├── FIGUEROA_ANGELO_1.3_APT122_AutoevaluaciónFase1.docx
-│       ├── VALENZUELA_JOAQUIN_1.3_APT122_AutoevaluaciónFase1.docx
+│       ├── VALENZUELA_JOAQUIN_1.1_APT122_AutoevaluacionCompetenciasFase1.docx
 │       ├── VALENZUELA_JOAQUIN_1.2_APT122_DiarioReflexionFase1.docx
-│       └── VALENZUELA_JOAQUIN_1.1_APT122_AutoevaluacionCompetenciasFase1.docx
+│       └── VALENZUELA_JOAQUIN_1.3_APT122_AutoevaluaciónFase1.docx
 ├── Fase 2/
 │   ├── Evidencias Grupales/
+│   │   └── 2.4_GuiaEstudiante_Fase 2_DesarrolloProyecto APT.docx
 │   ├── Evidencias Individuales/
+│   │   ├── DELGADO_JAVIER_2.1_APT122_DiarioReflexionFase2.docx
+│   │   ├── DIAZ_IVAN_2.1_APT122_DiarioReflexionFase2.docx
+│   │   ├── FIGUEROA_ANGELO_2.1_APT122_DiarioReflexionFase2.docx
+│   │   └── VALENZUELA_JOAQUIN_2.1_APT122_DiarioReflexionFase2.docx
 │   └── Evidencias Proyecto/
 │       ├── Evidencias de documentación/
 │       └── Evidencias de sistema/
