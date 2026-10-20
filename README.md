@@ -24,19 +24,24 @@ El proyecto contempla una aplicación web y una aplicación de escritorio.
 Muchas PYMEs gestionan su inventario de forma manual mediante planillas Excel o registros en papel. Esto provoca quiebres de stock no detectados a tiempo, pérdidas por diferencias de inventario no trazadas y la imposibilidad de conocer la cantidad y ubicación real de cada producto en sus bodegas. SmartStock centraliza y automatiza este proceso.
 
 ---
+## Tecnologías
 
-## Tecnologías utilizadas
-
-| Componente              | Tecnología                                                                   |
-|:------------------------|:-----------------------------------------------------------------------------|
-| Lenguaje                | Python 3.13.7                                                                |
-| Framework               | Django                                                                       |
-| API interna             | Django REST (comunicación entre componentes web, escritorio y base de datos) |
-| Frontend                | Django Templates, HTML, CSS, JavaScript                                      |
-| Base de datos           | PostgreSQL 16                                                                |
-| Aplicación de escritorio| pywebview                                                                    |
-| Control de versiones    | Git, GitHub                                                                  |
-| Gestión del proyecto    | Jira                                                                         |
+ Capa                      | Tecnología                                          
+|:-------------------------|:----------------------------------------------------|
+| Lenguaje                 | Python 3.13                                         |
+| Framework web            | Django 5.1.4                                        |
+| API REST                 | Django REST Framework                               |
+| Autenticación            | SimpleJWT (access + refresh con blacklist)          |
+| Base de datos            | PostgreSQL 16 (Neon Cloud)                          |
+| ORM                      | Django ORM con `CONN_MAX_AGE` para pooling          |
+| Aplicación de escritorio | pywebview (Chromium embebido)                       |
+| Frontend                 | Django Templates + Bootstrap 5 + JavaScript vanilla |
+| Gráficos                 | Chart.js                                            |
+| Escáner móvil            | html5-qrcode (EAN, UPC, Code128, QR)                |
+| Deploy                   | smartstockchile.cl con HTTPS                        |
+| Variables de entorno     | python-decouple                                     |
+| Control de versiones     | Git + GitHub                                        |
+| Gestión de proyecto      | Jira (Scrum)                                        |
 
 ---
 
