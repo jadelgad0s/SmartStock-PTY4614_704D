@@ -153,36 +153,39 @@ La aplicación de escritorio es la herramienta principal del administrador. Medi
 ### Instalación
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/SmartStock-PTY4614_704D.git
+# 1. Clonar el repositorio
+git clone https://github.com/IvanDiazT/SmartStock-PTY4614_704D.git
 cd SmartStock-PTY4614_704D
 
-# Crear y activar entorno virtual
+# 2. Crear y activar el entorno virtual
 python -m venv venv
-source venv/bin/activate        # Linux/Mac
+source venv/bin/activate        # Linux / Mac
 venv\Scripts\activate           # Windows
 
-# Instalar dependencias
+# 3. Instalar las dependencias
 pip install -r requirements.txt
 
-# Configurar variables de entorno
+# 4. Configurar las variables de entorno
 cp .env.example .env
-# Editar .env con los datos de conexión a PostgreSQL
+# Editar el .env con las credenciales de la base de datos Neon
+# (DATABASE_URL, SECRET_KEY, DEFAULT_FROM_EMAIL, etc.)
 
-# Crear la base de datos
-createdb smartstock
-
-# Aplicar migraciones
+# 5. Aplicar las migraciones
 python manage.py migrate
 
-# Crear superusuario
+# 6. (Opcional) Cargar datos iniciales
+python manage.py seed
+
+# 7. Crear un superusuario para acceder al admin
 python manage.py createsuperuser
 
-# Ejecutar servidor de desarrollo
+# 8. Levantar el servidor web
 python manage.py runserver
-```
+# → http://127.0.0.1:8000
 
-Acceder a `http://127.0.0.1:8000/` en el navegador.
+# 9. (Opcional) Levantar la aplicación de escritorio del administrador
+python desktop.py
+# → Abre pywebview con Chromium embebido conectado al Django local
 
 ### Ejecutar la aplicación de escritorio
 
