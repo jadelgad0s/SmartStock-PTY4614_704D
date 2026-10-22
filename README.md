@@ -48,78 +48,94 @@ Muchas PYMEs gestionan su inventario de forma manual mediante planillas Excel o 
 ## Arquitectura SmartStock
  
 ```
-┌───────────────────────────────────────────────────────────────────────┐
-│                                                                       │  
-│   PC del Administrador            Celulares (Encargado / Operador)    │
-│  ┌──────────────────────┐          ┌──────────────────────┐           │
-│  │ SmartStock Desktop   │          │ Navegador móvil      │           │
-│  │  (desktop.py)        │          │  (Chrome / Safari)   │           │
-│  │                      │          │                      │           │
-│  │  • pywebview         │          │  • Interfaz web      │           │
-│  │  • Chromium embebido │          │  • Escáner cámara    │           │
-│  │  • Acceso completo   │          │  • Notificaciones    │           │
-│  └──────────┬───────────┘          └──────────┬───────────┘           │
-│             │                                 │                       │
-│             │ HTTP localhost:8000             │ HTTPS                 │
-│             │                                 │                       │
-│             └──────────┬──────────────────────┘                       │
-│                        │                                              │
-│                        ▼                                              │
-│      ┌──────────────────────────────────────────────────┐             │
-│      │            Django Backend                        │             │
-│      │                                                  │             │
-│      │  apps/core        apps/usuarios   apps/productos │             │
-│      │  ──────────       ─────────────   ─────────────  │             │
-│      │  • Modelos        • Usuario       • Producto     │             │
-│      │    abstractos     • Rol/Permiso   • CodigoBarra  │             │
-│      │  • Auditoría      • Sesión        • Bodega       │             │
-│      │  • Middleware     • JWT auth      • StockBodega  │             │
-│      │  • Responses      • Permisos      • Movimiento   │             │
-│      │                    granulares     • Merma        │             │
-│      │                                   • Alerta       │             │
-│      │                                   • Notificación │             │
-│      │                                                  │             │
-│      │  DRF + SimpleJWT + CORS                          │             │
-│      └──────────────┬───────────────────────────────────┘             │
-│                     │                                                 │
-│                     │ Django ORM (CONN_MAX_AGE=600)                   │
-│                     │                                                 │
-│                     ▼                                                 │
-│      ┌──────────────────────────────────────────────────┐             │
-│      │        PostgreSQL 16  ·  Neon Cloud              │             │
-│      │                                                  │             │
-│      │        30+ tablas normalizadas                   │             │
-│      │                                                  │             │
-│      │  Usuarios/Seguridad:  usuarios, roles, permisos, │             │
-│      │                       rol_permiso, sesiones,     │             │
-│      │                       auditoria                  │             │
-│      │                                                  │             │
-│      │  Productos:           productos, codigos_barra   │             │
-│      │                                                  │             │
-│      │  Bodegas:             bodegas, pasillos,         │             │
-│      │                       estanterias, niveles,      │             │
-│      │                       ubicaciones,               │             │
-│      │                       producto_ubicacion         │             │
-│      │                                                  │             │
-│      │  Movimientos:         stock_bodega, stock_minimo,│             │
-│      │                       movimientos,               │             │
-│      │                       tipo_movimiento,           │             │
-│      │                       detalle_movimiento,        │             │
-│      │                       transferencias,            │             │
-│      │                       detalle_transferencia,     │             │
-│      │                       historial_movimientos      │             │
-│      │                                                  │             │
-│      │  Mermas:              mermas, motivo_merma       │             │
-│      │                                                  │             │
-│      │  Alertas:             alertas, tipo_alerta,      │             │
-│      │                       log_alertas                │             │
-│      │                                                  │             │
-│      │  Notificaciones:      notificaciones             │             │
-│      │                                                  │             │
-│      │  Reportes:            reportes, tipo_reporte     │             │
-│      └──────────────────────────────────────────────────┘             │
-│                                                                       │
-└───────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   PC del Administrador              Celulares (Encargado / Operador)        │
+│  ┌──────────────────────┐           ┌──────────────────────┐                │
+│  │ SmartStock Desktop   │           │ Navegador móvil      │                │
+│  │  (desktop.py)        │           │  (Chrome / Safari)   │                │
+│  │                      │           │                      │                │
+│  │  • pywebview         │           │  • Interfaz web      │                │
+│  │  • Chromium embebido │           │  • Escáner cámara    │                │
+│  │  • Acceso completo   │           │    (html5-qrcode)    │                │
+│  │                      │           │  • Notificaciones    │                │
+│  └──────────┬───────────┘           └──────────┬───────────┘                │
+│             │                                  │                            │
+│             │ HTTP localhost:8000              │ HTTPS                      │
+│             │ (Django local)                   │ smartstockchile.cl         │
+│             │                                  │                            │
+│             │                        ┌─────────▼─────────┐                  │
+│             │                        │   Cloudflare      │                  │
+│             │                        │   (DNS + SSL)     │                  │
+│             │                        └─────────┬─────────┘                  │
+│             │                                  │                            │
+│             │                        ┌─────────▼─────────┐                  │
+│             │                        │   Render Cloud    │                  │
+│             │                        │   (Gunicorn)      │                  │
+│             │                        └─────────┬─────────┘                  │
+│             │                                  │                            │
+│             └──────────┬───────────────────────┘                            │
+│                        │                                                    │
+│                        ▼                                                    │
+│      ┌─────────────────────────────────────────────────────┐                │
+│      │              Django 5.2 Backend                     │                │
+│      │           API REST  /api/v1/  +  JWT                │                │
+│      │                                                     │                │
+│      │  apps/core        apps/usuarios      apps/productos │                │
+│      │  ──────────       ─────────────      ─────────────  │                │
+│      │  • Modelos        • Usuario          • Producto     │                │
+│      │    abstractos     • Rol / Permiso    • CodigoBarra  │                │
+│      │  • Auditoría      • RolPermiso       • Bodega       │                │
+│      │  • Middleware     • Sesion           • StockBodega  │                │
+│      │  • safe_delete    • JWT              • Movimiento   │                │
+│      │  • Responses        (SimpleJWT)      • Merma        │                │
+│      │                   • Permisos         • Alerta       │                │
+│      │                     granulares       • Notificación │                │
+│      │                   • Email backend                   │                │
+│      │                     (recuperación)                  │                │
+│      │                                                     │                │
+│      │  DRF  +  SimpleJWT  +  django-cors-headers          │                │
+│      └─────────────────────┬───────────────────────────────┘                │
+│                            │                                                │
+│                            │ Django ORM  (psycopg 3.2, CONN_MAX_AGE=600)    │
+│                            │                                                │
+│                            │                                                │
+│                            ▼                                                │
+│      ┌─────────────────────────────────────────────────────┐                │
+│      │       PostgreSQL 16  ·  Neon Cloud (AWS US-East)    │                │
+│      │                                                     │                │
+│      │              31 tablas normalizadas                 │                │
+│      │                                                     │                │
+│      │  Usuarios / Seguridad:  usuarios, roles, permisos,  │                │
+│      │                         rol_permiso, sesiones,      │                │
+│      │                         auditoria                   │                │
+│      │                                                     │                │
+│      │  Productos:             productos, codigos_barra    │                │
+│      │                                                     │                │
+│      │  Bodegas:               bodegas, pasillos,          │                │
+│      │                         estanterias, niveles,       │                │
+│      │                         ubicaciones,                │                │
+│      │                         producto_ubicacion          │                │
+│      │                                                     │                │
+│      │  Movimientos:           stock_bodega, stock_minimo, │                │
+│      │                         tipo_movimiento,            │                │
+│      │                         movimientos,                │                │
+│      │                         detalle_movimiento,         │                │
+│      │                         transferencias,             │                │
+│      │                         detalle_transferencia,      │                │
+│      │                         historial_movimientos       │                │
+│      │                                                     │                │
+│      │  Mermas:                mermas, motivo_merma        │                │
+│      │                                                     │                │
+│      │  Alertas:               alertas, tipo_alerta,       │                │
+│      │                         log_alertas                 │                │
+│      │                                                     │                │
+│      │  Notificaciones:        notificaciones              │                │
+│      │                                                     │                │
+│      │  Reportes:              reportes, tipo_reporte      │                │
+│      └─────────────────────────────────────────────────────┘                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 La aplicación de escritorio es la herramienta principal del administrador. Mediante pywebview, abre una ventana nativa que carga la misma interfaz web servida por Django en localhost, dando acceso completo a todas las funcionalidades del sistema: gestión de productos, bodegas, ubicaciones, movimientos, alertas, reportes y administración de usuarios. Toda la lógica de negocio, validaciones y acceso a datos se concentra en el backend Django.
