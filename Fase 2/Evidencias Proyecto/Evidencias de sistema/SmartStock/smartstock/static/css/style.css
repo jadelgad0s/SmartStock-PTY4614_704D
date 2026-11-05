@@ -1,0 +1,20 @@
+/* Reseteo pa evitar dramas de margen en mi vista */
+body {
+    margin: 0;
+    background-color: #f8f9fa;
+}
+
+/* Menú lateral oscuro corporativo */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #212529;
+    color: white;
+    position: fixed;
+}
+
+/* Tiro el contenido a la derecha pa que la sidebar no me lo tape */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}

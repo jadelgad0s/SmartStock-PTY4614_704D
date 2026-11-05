@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ meta.titulo }} — SmartStock</title>
+<style>
+@page { size: A4 landscape; margin: 12mm; }
+body { margin: 0; background: white; color: #172034; font: 11px/1.4 Arial, sans-serif; }
+h1 { font-size: 21px; margin: 0 0 8px; } p { margin: 5px 0; }
+.meta { margin: 12px 0; } .notas { margin: 12px 0; color: #475569; }
+table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+th,td { border: 1px solid #cbd5e1; text-align: left; padding: 6px; vertical-align: top; overflow-wrap: anywhere; white-space: pre-wrap; }
+th { background: #f1f5f9; } thead { display: table-header-group; } tr { break-inside: avoid; }
+footer { margin-top: 16px; color: #475569; }
+</style></head><body>
+<h1>SmartStock — {{ meta.titulo }}</h1>
+<div class="meta">
+<p><strong>Generado:</strong> {{ meta.generado }} · {{ meta.zona_horaria }}</p>
+<p><strong>Generado por:</strong> {{ generado_por }}</p>
+{% for etiqueta, valor in meta.filtros %}<p><strong>{{ etiqueta }}:</strong> {{ valor }}</p>{% endfor %}
+<p><strong>Total de registros:</strong> {{ total }} · {{ meta.orden }}</p>
+{% for r in meta.resumen %}<p><strong>{{ r.etiqueta }}:</strong> {{ r.valor }}</p>{% endfor %}
+</div>
+<div class="notas">{% for nota in meta.notas %}<p>{{ nota }}</p>{% endfor %}</div>
+<table><thead><tr>{% for c in meta.columnas %}<th>{{ c.etiqueta }}</th>{% endfor %}</tr></thead>
+<tbody>{% for fila in registros %}<tr>{% for valor in fila %}<td>{{ valor }}</td>{% endfor %}</tr>
+{% empty %}<tr><td colspan="{{ meta.columnas|length }}">No hay registros para estos filtros.</td></tr>{% endfor %}</tbody></table>
+<footer>Documento generado por SmartStock · Uso interno</footer>
+</body></html>

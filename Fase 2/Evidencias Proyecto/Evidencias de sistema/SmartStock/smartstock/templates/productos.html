@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Catálogo de Productos - SmartStock{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/productos_paginacion.css' %}?v=6">{% endblock %}
+
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR CORPORATIVA -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+        
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% include "componentes/enlace_inicio_bodega.html" only %}
+            <li class="nav-item">
+                <a href="/dashboard/" class="nav-link sidebar-item"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/productos/" class="nav-link sidebar-item active"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a>
+            </li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" only %}
+            
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li>
+                <a href="/movimientos/" class="nav-link sidebar-item"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a>
+            </li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li>
+                <a href="/mermas/" class="nav-link sidebar-item"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a>
+            </li>
+            <li id="menu-auditoria" hidden>
+                <a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a>
+            </li>
+            
+            <div class="text-sidebar-muted" id="menu-sistema-title" hidden>Sistema</div>
+            <li id="menu-usuarios" hidden>
+                <a href="/usuarios/" class="nav-link sidebar-item"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a>
+            </li>
+            {% include "componentes/enlace_sms.html" only %}
+            <li id="menu-config" hidden>
+                <a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a>
+            </li>
+        </ul>
+        
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0f766e&color=fff" class="rounded-circle me-2" width="32" height="32">
+                <div style="line-height: 1.2;">
+                    <strong class="d-block text-truncate" style="font-size: 0.85rem; color: #1e293b; max-width: 130px;" id="user-name-sidebar">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role-sidebar">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 d-flex flex-column ss-main" style="background-color: #f8fafc;">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3 ss-catalog-topbar">
+            <div class="container-fluid p-0">
+                <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+                <h5 class="mb-0 fw-bold">Gestión de inventario</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle d-inline-flex align-items-center gap-2" aria-pressed="false" aria-label="Activar modo oscuro" title="Activar modo oscuro"><i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline">Oscuro</span></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-logout-productos">Cerrar sesión</button>
+                </div>
+            </div>
+        </nav>
+        <main class="container-fluid p-4 ss-catalogo">
+            <div class="ss-catalog-heading">
+                <div><h4 class="fw-bold mb-1">Catálogo de productos</h4><p class="text-muted small mb-0">Administra productos, precios de referencia y disponibilidad.</p></div>
+                <button type="button" id="btnNuevoProducto" class="btn btn-primary" data-bs-target="#modalNuevoProducto" hidden><i class="fa-solid fa-plus me-2" aria-hidden="true"></i>Nuevo producto</button>
+            </div>
+            <div id="avisoCatalogo" class="alert alert-danger" role="alert" hidden></div>
+            <button type="button" id="reintentarOpcionesProductos" class="btn btn-outline-secondary mb-3" hidden>Reintentar opciones</button>
+            <div class="ss-catalog-filters">
+                <div class="ss-catalog-search"><label for="buscadorProductos">Buscar producto</label><div class="ss-catalog-search-controls"><input type="search" id="buscadorProductos" class="form-control" placeholder="Nombre, SKU o código de barras" maxlength="200"><button type="button" id="mostrarFiltrosProductos" class="btn btn-outline-secondary" aria-expanded="false" aria-controls="filtrosProductos">Filtros</button></div></div>
+                <div id="filtrosProductos" class="ss-catalog-more">
+                    <div class="ss-catalog-warehouse"><label for="bodegaProductos">Bodega</label><select id="bodegaProductos" class="form-select" disabled><option value="">Cargando...</option></select></div>
+                    <div><label for="estadoProductos">Estado</label><select id="estadoProductos" class="form-select"><option value="">Todos</option><option value="true">Activos</option><option value="false">Inactivos</option></select></div>
+                    <div><label for="stockProductos">Disponibilidad</label><select id="stockProductos" class="form-select" disabled><option value="">Todas</option><option value="suficiente">Stock suficiente</option><option value="bajo">Stock bajo</option><option value="agotado">Agotado</option></select></div>
+                    <div class="ss-catalog-order"><label for="ordenarProductos">Ordenar por</label><select id="ordenarProductos" class="form-select"><option value="nombre,id">Nombre A–Z</option><option value="-nombre,-id">Nombre Z–A</option><option value="precio_referencia,id">Precio: menor a mayor</option><option value="-precio_referencia,-id">Precio: mayor a menor</option><option value="fecha_creacion,id">Fecha: antiguo a reciente</option><option value="-fecha_creacion,-id">Fecha: reciente a antiguo</option></select></div>
+                    <button type="button" id="limpiarFiltrosProductos" class="btn btn-outline-secondary">Limpiar filtros</button>
+                </div>
+            </div>
+            <p id="alcanceStockProductos" class="text-muted small">Seleccionando bodega...</p>
+            <div class="ss-products-toolbar"><span id="totalProductos" class="text-muted small" role="status" aria-live="polite" tabindex="-1">Cargando productos...</span><nav id="paginacionProductosSuperior" class="ss-products-pagination ss-products-pagination-top" aria-label="Páginas del catálogo, navegación superior"></nav></div>
+            <button type="button" id="reintentarProductos" class="btn btn-outline-secondary mb-3" hidden>Reintentar carga</button>
+            <div class="card ss-products-card">
+                <div class="table-responsive ss-product-table-scroll">
+                    <table class="table table-custom mb-0" id="tablaProductos" aria-label="Catálogo de productos">
+                        <thead><tr><th>SKU</th><th>Producto</th><th>Stock</th><th>Precio ref. (CLP)</th><th>Estado</th><th>Acciones</th></tr></thead>
+                        <tbody id="listaProductos" aria-busy="true"><tr><td colspan="6" class="text-center text-muted py-4">Cargando catálogo...</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="ss-products-footer"><p class="text-muted small mb-0" id="resumenPaginacionProductos" role="status" aria-live="polite"></p><nav id="paginacionProductos" class="ss-products-pagination" aria-label="Páginas del catálogo, navegación inferior"></nav><button id="ssVolverArriba" type="button" class="btn btn-outline-secondary ss-back-to-top" aria-label="Volver arriba" hidden><i class="fa-solid fa-arrow-up me-2" aria-hidden="true"></i>Volver arriba</button></div>
+            </div>
+        </main>
+    </div>
+</div>
+<div class="modal fade ss-product-modal" id="modalNuevoProducto" tabindex="-1" aria-labelledby="titulomodalNuevoProducto" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="titulomodalNuevoProducto">Nuevo producto</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <form id="formCrearProducto" novalidate>
+            <div class="modal-body">
+                <p id="estadoFormularioProductoNuevo" class="text-muted small" role="status" hidden></p>
+                <div id="errorCrearProducto" class="alert alert-danger" role="alert" hidden></div>
+                <section class="ss-code-lookup" aria-labelledby="tituloConsultaCodigo">
+                    <h6 id="tituloConsultaCodigo">Completar desde un código</h6>
+                    <label for="consultaCodigoProducto">Código de barras, QR o SKU registrado</label>
+                    <div class="ss-code-lookup-controls">
+                        <input id="consultaCodigoProducto" type="text" class="form-control" maxlength="100" autocomplete="off" placeholder="Escribe o escanea el código" data-codigos-editor="true" aria-describedby="ayudaConsultaCodigo estadoConsultaCodigo">
+                        <button type="button" id="buscarDatosProducto" class="btn btn-primary">Buscar datos</button>
+                        <button type="button" class="btn btn-outline-secondary ss-scan-code" data-target="consultaCodigoProducto" aria-label="Escanear para completar el producto"><i class="fa-solid fa-camera me-2" aria-hidden="true"></i>Escanear</button>
+                    </div>
+                    <p id="ayudaConsultaCodigo" class="form-text mb-0">Busca primero en SmartStock y luego en Open Food Facts para alimentos y bebidas. También puedes completar el formulario manualmente.</p>
+                    <p id="estadoConsultaCodigo" class="small mt-2 mb-0" role="status" aria-live="polite" hidden></p>
+                    <div id="resultadoConsultaCodigo" class="ss-code-lookup-result" hidden></div>
+                </section>
+                <div class="row g-3">
+                    <div class="col-sm-5"><label for="inputSku">SKU interno</label><input id="inputSku" type="text" class="form-control" maxlength="50" required placeholder="Ej.: FER-021" aria-describedby="inputSkuAyuda inputSkuError"><div class="form-text" id="inputSkuAyuda">Letras, números, guion o guion bajo.</div><div class="invalid-feedback" id="inputSkuError"></div></div>
+                    <div class="col-sm-7"><label for="inputNombre">Nombre del producto</label><input id="inputNombre" type="text" class="form-control" maxlength="200" required aria-describedby="inputNombreError"><div class="invalid-feedback" id="inputNombreError"></div></div>
+                    <div class="col-12"><label for="inputDescripcion">Descripción (opcional)</label><textarea id="inputDescripcion" class="form-control" rows="3" aria-describedby="inputDescripcionError"></textarea><div class="invalid-feedback" id="inputDescripcionError"></div></div>
+                    <div class="col-12"><label for="inputPrecio">Precio de referencia (CLP)</label><input id="inputPrecio" type="number" class="form-control" min="0" max="9999999999.99" step="0.01" inputmode="decimal" required aria-describedby="inputPrecioAyuda inputPrecioError"><div class="form-text" id="inputPrecioAyuda">Pesos chilenos. Hasta dos decimales.</div><div class="invalid-feedback" id="inputPrecioError"></div></div>
+                </div>
+                <fieldset class="ss-codes-fieldset mt-4"><legend>Códigos de barras y QR (opcionales)</legend>
+                    <label for="inputCodigoBarra">Añadir código</label>
+                    <div class="ss-code-adder"><input id="inputCodigoBarra" type="text" class="form-control" maxlength="100" placeholder="Escribe o escanea el código" data-codigos-editor="true" aria-describedby="ayudaCodigosNuevo errorCodigosNuevo"><select id="tipoCodigoNuevo" class="form-select" aria-label="Tipo del código nuevo"><option value="BARRA">Barras</option><option value="QR">QR</option></select><button id="agregarCodigoNuevo" type="button" class="btn btn-outline-secondary">Agregar</button><button type="button" class="btn btn-outline-secondary ss-scan-code" data-target="inputCodigoBarra" aria-label="Escanear código con la cámara"><i class="fa-solid fa-camera me-2" aria-hidden="true"></i>Escanear</button></div>
+                    <p id="ayudaCodigosNuevo" class="form-text">Cada código ocupa una fila. El principal se identifica en la lista. Un código pendiente también se añade al guardar.</p>
+                    <div id="errorCodigosNuevo" class="text-danger small mb-2" role="alert" hidden></div>
+                    <div id="listaCodigosNuevo" class="ss-code-list"></div>
+                </fieldset>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary" id="guardarNuevoProducto">Crear producto</button></div>
+        </form>
+    </div></div>
+</div>
+<div class="modal fade ss-product-modal" id="modalEditarProducto" tabindex="-1" aria-labelledby="titulomodalEditarProducto" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="titulomodalEditarProducto">Editar producto</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <form id="formEditarProducto" novalidate>
+            <div class="modal-body">
+                <p id="estadoFormularioProductoEditar" class="text-muted small" role="status" hidden></p>
+                <div id="errorEditarProducto" class="alert alert-danger" role="alert" hidden></div>
+                <input type="hidden" id="editProductoId"><button type="button" id="reintentarDetalleEdicion" class="btn btn-outline-secondary mb-3" hidden>Reintentar carga del producto</button>
+                <div class="row g-3">
+                    <div class="col-sm-5"><label for="editSku">SKU interno</label><input id="editSku" type="text" class="form-control" maxlength="50" required placeholder="Ej.: FER-021" aria-describedby="editSkuAyuda editSkuError"><div class="form-text" id="editSkuAyuda">Letras, números, guion o guion bajo.</div><div class="invalid-feedback" id="editSkuError"></div></div>
+                    <div class="col-sm-7"><label for="editNombre">Nombre del producto</label><input id="editNombre" type="text" class="form-control" maxlength="200" required aria-describedby="editNombreError"><div class="invalid-feedback" id="editNombreError"></div></div>
+                    <div class="col-12"><label for="editDescripcion">Descripción (opcional)</label><textarea id="editDescripcion" class="form-control" rows="3" aria-describedby="editDescripcionError"></textarea><div class="invalid-feedback" id="editDescripcionError"></div></div>
+                    <div class="col-12"><label for="editPrecio">Precio de referencia (CLP)</label><input id="editPrecio" type="number" class="form-control" min="0" max="9999999999.99" step="0.01" inputmode="decimal" required aria-describedby="editPrecioAyuda editPrecioError"><div class="form-text" id="editPrecioAyuda">Pesos chilenos. Hasta dos decimales.</div><div class="invalid-feedback" id="editPrecioError"></div></div>
+                </div>
+                <fieldset class="ss-codes-fieldset mt-4"><legend>Códigos de barras y QR (opcionales)</legend>
+                    <label for="editCodigosBarra">Añadir código</label>
+                    <div class="ss-code-adder"><input id="editCodigosBarra" type="text" class="form-control" maxlength="100" placeholder="Escribe o escanea el código" data-codigos-editor="true" aria-describedby="ayudaCodigosEditar errorCodigosEditar"><select id="tipoCodigoEditar" class="form-select" aria-label="Tipo del código nuevo"><option value="BARRA">Barras</option><option value="QR">QR</option></select><button id="agregarCodigoEditar" type="button" class="btn btn-outline-secondary">Agregar</button><button type="button" class="btn btn-outline-secondary ss-scan-code" data-target="editCodigosBarra" aria-label="Escanear código con la cámara"><i class="fa-solid fa-camera me-2" aria-hidden="true"></i>Escanear</button></div>
+                    <p id="ayudaCodigosEditar" class="form-text">Cada código ocupa una fila. El principal se identifica en la lista. Un código pendiente también se añade al guardar.</p>
+                    <div id="errorCodigosEditar" class="text-danger small mb-2" role="alert" hidden></div>
+                    <div id="listaCodigosEditar" class="ss-code-list"></div>
+                </fieldset>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary" id="guardarEditarProducto">Guardar cambios</button></div>
+        </form>
+    </div></div>
+</div>
+<div class="modal fade ss-product-modal" id="modalDetalleProducto" tabindex="-1" aria-labelledby="tituloDetalleProducto" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloDetalleProducto">Detalle del producto</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div class="modal-body"><p id="estadoDetalleProducto" role="status">Cargando producto...</p><button type="button" id="reintentarDetalleProducto" class="btn btn-outline-secondary mb-3" hidden>Reintentar</button>
+        <div id="datosDetalleProducto" hidden><h6 id="detalleProductoNombre" class="fw-bold"></h6><dl class="ss-product-detail"><dt>SKU</dt><dd id="detalleProductoSku"></dd><dt>Estado</dt><dd id="detalleProductoEstado"></dd><dt>Precio de referencia</dt><dd id="detalleProductoPrecio"></dd><dt>Creación</dt><dd id="detalleProductoCreado"></dd><dt>Última modificación</dt><dd id="detalleProductoModificado"></dd></dl><h6>Descripción</h6><p id="detalleProductoDescripcion" class="ss-product-description"></p><p id="detalleProductoFuente" class="small text-muted" hidden></p><h6>Códigos asociados</h6><ul id="detalleProductoCodigos" class="ss-product-codes-detail"></ul><h6>Existencias en bodegas activas</h6><p class="text-muted small">Un producto sin registro de stock en una bodega se muestra con 0 unidades.</p><div class="table-responsive"><table class="table table-sm ss-product-stock-detail"><thead><tr><th>Bodega</th><th>Stock</th><th>Mínimo</th><th>Disponibilidad</th></tr></thead><tbody id="detalleProductoStock"></tbody></table></div></div>
+    </div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button></div>
+</div></div></div>
+<div class="modal fade ss-product-modal" id="modalStockMinimo" tabindex="-1" aria-labelledby="tituloStockMinimo" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloStockMinimo">Configurar mínimo de stock</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formStockMinimo" novalidate><div class="modal-body">
+        <p id="estadoStockMinimo" role="status">Cargando mínimo...</p><button type="button" id="reintentarStockMinimo" class="btn btn-outline-secondary mb-3" hidden>Reintentar carga</button>
+        <div id="datosStockMinimo" hidden><strong id="nombreStockMinimo"></strong><p id="skuStockMinimo" class="text-muted small"></p>
+            <dl class="ss-product-detail"><dt>Bodega</dt><dd id="bodegaStockMinimo"></dd><dt>Existencias actuales</dt><dd id="cantidadStockMinimo"></dd></dl>
+            <label for="inputStockMinimo">Mínimo para stock bajo (unidades)</label><input id="inputStockMinimo" type="number" class="form-control" min="0" max="2147483647" step="1" inputmode="numeric" required disabled aria-describedby="ayudaStockMinimo errorCampoStockMinimo previsionStockMinimo">
+            <div id="errorCampoStockMinimo" class="invalid-feedback"></div>
+            <p id="ayudaStockMinimo" class="form-text">Con existencias entre 1 unidad y este mínimo, el producto se muestra con stock bajo. El valor 0 desactiva el aviso de stock bajo; los productos sin existencias siguen como agotados.</p>
+            <p id="previsionStockMinimo" class="small mb-0" role="status" aria-live="polite"></p>
+        </div><div id="errorStockMinimo" class="alert alert-danger mt-3" role="alert" hidden></div>
+    </div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" id="guardarStockMinimo" class="btn btn-primary" disabled>Guardar mínimo</button></div></form>
+</div></div></div>
+<div class="modal fade ss-product-modal" id="modalAccionProducto" tabindex="-1" aria-labelledby="tituloAccionProducto" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="tituloAccionProducto">Confirmar acción</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formAccionProducto"><div class="modal-body"><p id="estadoAccionProducto" role="status">Cargando producto...</p><div id="contenidoAccionProducto" hidden><strong id="nombreAccionProducto"></strong><p id="skuAccionProducto" class="text-muted small"></p><p id="descripcionAccionProducto" class="mb-0"></p></div><div id="errorAccionProducto" class="alert alert-danger mt-3" role="alert" hidden></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" id="confirmarAccionProducto" class="btn btn-primary" disabled>Confirmar</button></div></form>
+</div></div></div>
+<!-- Lector de códigos desde cámara, compartido entre creación y edición. -->
+<div class="modal fade" id="ssModalCamara" tabindex="-1" aria-label="Escáner de código de barras">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Escanear código con la cámara</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        {% include "componentes/vista_previa_camara.html" only %}
+        <p class="form-text" id="ssCamaraEstado" role="status">Apunta la cámara hacia el código de barras.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+<script src="{% static 'js/productos.js' %}?v=sesion-1" defer></script>
+<script src="{% static 'js/escaneo_camara.js' %}?v=camara-4" defer></script>
+{% endblock %}

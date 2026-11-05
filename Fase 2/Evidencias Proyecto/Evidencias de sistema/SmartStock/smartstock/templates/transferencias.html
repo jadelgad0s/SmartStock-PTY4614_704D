@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Transferencias - SmartStock{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/transferencias.css' %}?v=1">{% endblock %}
+
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR CORPORATIVA -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% include "componentes/enlace_inicio_bodega.html" only %}
+            <li class="nav-item">
+                <a href="/dashboard/" class="nav-link sidebar-item"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/productos/" class="nav-link sidebar-item"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a>
+            </li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" only %}
+
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li>
+                <a href="/movimientos/" class="nav-link sidebar-item"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a>
+            </li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item active"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li>
+                <a href="/mermas/" class="nav-link sidebar-item"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a>
+            </li>
+            <li id="menu-auditoria" hidden>
+                <a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a>
+            </li>
+
+            <div class="text-sidebar-muted" id="menu-sistema-title" hidden>Sistema</div>
+            <li id="menu-usuarios" hidden>
+                <a href="/usuarios/" class="nav-link sidebar-item"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a>
+            </li>
+            {% include "componentes/enlace_sms.html" only %}
+            <li id="menu-config" hidden>
+                <a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a>
+            </li>
+        </ul>
+
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0f766e&color=fff" class="rounded-circle me-2" width="32" height="32">
+                <div style="line-height: 1.2;">
+                    <strong class="d-block text-truncate" style="font-size: 0.85rem; color: #1e293b; max-width: 130px;" id="user-name-sidebar">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role-sidebar">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 d-flex flex-column ss-main" style="background-color: #f8fafc;">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3 ss-transfer-topbar">
+            <div class="container-fluid p-0">
+                <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+                <h5 class="mb-0 fw-bold">Gestión de inventario</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle d-inline-flex align-items-center gap-2" aria-pressed="false" aria-label="Activar modo oscuro" title="Activar modo oscuro"><i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline">Oscuro</span></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-logout-transferencias">Cerrar sesión</button>
+                </div>
+            </div>
+        </nav>
+        <main class="container-fluid p-4 ss-transferencias">
+            <div class="ss-transfer-heading"><div><h4 class="fw-bold mb-1">Transferencias entre bodegas</h4><p class="small text-muted mb-0">Traslada productos y consulta el historial de sus transferencias.</p></div><button id="nuevaTransferencia" class="btn btn-primary" type="button" disabled><i class="fa-solid fa-right-left me-2" aria-hidden="true"></i>Nueva transferencia</button></div>
+            <p id="estadoBodegasTransferencias" class="small text-muted" role="status">Cargando bodegas...</p>
+            <button id="actualizarBodegasTransferencias" class="btn btn-sm btn-outline-secondary mb-3" type="button">Actualizar bodegas</button>
+            <div id="avisoTransferenciaPendiente" class="alert alert-warning" role="status" hidden><p class="mb-2">Hay una transferencia cuya confirmación quedó pendiente. Puedes verificarla sin duplicar el traslado.</p><button id="reanudarTransferencia" class="btn btn-outline-secondary" type="button">Verificar transferencia</button></div>
+            <form id="filtrosTransferencias" class="ss-transfer-filters" aria-label="Filtrar historial de transferencias">
+                <div class="ss-transfer-search"><label for="buscarTransferencias">Buscar producto</label><input id="buscarTransferencias" type="search" class="form-control" maxlength="200" placeholder="Nombre o SKU"></div>
+                <button id="mostrarFiltrosTransferencias" type="button" class="btn btn-outline-secondary ss-transfer-toggle" aria-expanded="false" aria-controls="camposFiltrosTransferencias">Filtros</button>
+                <div id="camposFiltrosTransferencias" class="ss-transfer-filter-fields">
+                    <div><label for="origenTransferencias">Bodega de origen</label><select id="origenTransferencias" class="form-select"><option value="">Todas</option></select></div>
+                    <div><label for="destinoTransferencias">Bodega de destino</label><select id="destinoTransferencias" class="form-select"><option value="">Todas</option></select></div>
+                    <div><label for="estadoTransferencias">Estado</label><select id="estadoTransferencias" class="form-select"><option value="">Todos</option><option value="COMPLETADA">Completadas</option><option value="PENDIENTE">Pendientes</option></select></div>
+                    <div><label for="desdeTransferencias">Desde</label><input id="desdeTransferencias" class="form-control" type="date"></div>
+                    <div><label for="hastaTransferencias">Hasta</label><input id="hastaTransferencias" class="form-control" type="date"></div>
+                    <button id="limpiarTransferencias" type="button" class="btn btn-outline-secondary">Limpiar filtros</button>
+                </div>
+            </form>
+            <div id="errorHistorialTransferencias" class="alert alert-danger" role="alert" hidden></div><button id="reintentarHistorialTransferencias" class="btn btn-outline-secondary mb-3" type="button" hidden>Reintentar historial</button>
+            <p id="totalTransferencias" class="small text-muted" role="status" aria-live="polite" tabindex="-1">Cargando transferencias...</p>
+            <div class="card ss-transfer-card"><div class="table-responsive"><table class="table table-custom mb-0" aria-label="Historial de transferencias"><thead><tr><th>Fecha / hora</th><th>Producto</th><th>Origen y destino</th><th>Cantidad</th><th>Estado</th><th>Responsable</th><th>Acciones</th></tr></thead><tbody id="listaTransferencias" aria-busy="true"></tbody></table></div><div class="ss-transfer-footer"><span id="resumenTransferencias" class="small text-muted" role="status"></span><nav id="paginacionTransferencias" aria-label="Páginas de transferencias"></nav><button id="arribaTransferencias" class="btn btn-sm btn-outline-secondary" type="button">Volver arriba</button></div></div>
+        </main>
+    </div>
+</div>
+<div id="modalTransferencia" class="modal fade ss-transfer-modal" tabindex="-1" aria-labelledby="tituloNuevaTransferencia" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloNuevaTransferencia" class="modal-title">Nueva transferencia</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formTransferencia" novalidate><div class="modal-body">
+        <p class="small text-muted">Al confirmar, las unidades se descuentan del origen y se suman al destino.</p>
+        <div id="errorNuevaTransferencia" class="alert alert-danger" role="alert" hidden></div>
+        <div class="row g-3 mb-3"><div class="col-md-6"><label for="transferenciaOrigen">Bodega de origen</label><select id="transferenciaOrigen" class="form-select" required></select></div><div class="col-md-6"><label for="transferenciaDestino">Bodega de destino</label><select id="transferenciaDestino" class="form-select" required></select></div></div>
+        <label for="transferenciaCodigo">Escanear o escribir código</label><div class="ss-transfer-code mb-1"><input id="transferenciaCodigo" type="text" maxlength="100" class="form-control" data-codigos-editor="true" placeholder="SKU, código de barras o QR" autocomplete="off"><button id="buscarCodigoTransferencia" class="btn btn-outline-secondary" type="button">Buscar código</button><button id="camaraTransferencia" class="btn btn-outline-secondary ss-scan-code" data-target="transferenciaCodigo" type="button"><i class="fa-solid fa-camera me-1" aria-hidden="true"></i>Cámara</button></div><p class="form-text mb-3">El lector físico también funciona: escanea el código y pulsa Enter.</p>
+        <label for="transferenciaBuscarProducto">Buscar en los productos disponibles</label><input id="transferenciaBuscarProducto" type="search" maxlength="200" class="form-control mb-2" placeholder="Nombre, SKU o código de barras" autocomplete="off">
+        <label for="transferenciaProducto">Producto</label><select id="transferenciaProducto" class="form-select" required disabled><option value="">Selecciona las bodegas de origen y destino</option></select>
+        <div class="ss-transfer-product-pages my-2"><button id="productosTransferenciaAnterior" class="btn btn-sm btn-outline-secondary" type="button" disabled>Anterior</button><span id="resumenProductosTransferencia" class="small text-muted" role="status"></span><button id="productosTransferenciaSiguiente" class="btn btn-sm btn-outline-secondary" type="button" disabled>Siguiente</button></div><button id="reintentarProductosTransferencia" class="btn btn-sm btn-outline-secondary mb-3" type="button" hidden>Reintentar productos</button>
+        <div class="ss-transfer-quantity"><label for="transferenciaCantidad">Cantidad a transferir</label><input id="transferenciaCantidad" type="number" class="form-control" min="1" max="2147483647" step="1" inputmode="numeric" value="1" required></div>
+        <div id="previsionTransferencia" class="ss-transfer-preview mt-3" hidden><div><span class="small text-muted">Origen</span><strong id="nombreOrigenTransferencia"></strong><span id="stockOrigenTransferencia"></span></div><div><span class="small text-muted">Destino</span><strong id="nombreDestinoTransferencia"></strong><span id="stockDestinoTransferencia"></span></div></div>
+        <p id="resumenNuevaTransferencia" class="alert alert-info small mt-3 mb-0" role="status" aria-live="polite">Selecciona bodegas, producto y cantidad para revisar el traslado.</p>
+    </div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><button id="confirmarTransferencia" type="submit" class="btn btn-primary" disabled>Confirmar transferencia</button></div></form>
+</div></div></div>
+<div id="modalDetalleTransferencia" class="modal fade ss-transfer-modal" tabindex="-1" aria-labelledby="tituloDetalleTransferencia" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloDetalleTransferencia" class="modal-title">Detalle de la transferencia</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div class="modal-body"><p id="estadoDetalleTransferencia" role="status">Cargando...</p><div id="datosDetalleTransferencia" hidden><dl class="ss-transfer-detail"><dt>Transferencia</dt><dd id="detalleTransferenciaId"></dd><dt>Fecha / hora</dt><dd id="detalleTransferenciaFecha"></dd><dt>Estado</dt><dd id="detalleTransferenciaEstado"></dd><dt>Responsable</dt><dd id="detalleTransferenciaUsuario"></dd><dt>Bodega de origen</dt><dd id="detalleTransferenciaOrigen"></dd><dt>Bodega de destino</dt><dd id="detalleTransferenciaDestino"></dd></dl><h6>Productos transferidos</h6><div class="table-responsive"><table class="table table-sm ss-transfer-detail-products"><thead><tr><th>SKU</th><th>Producto</th><th>Cantidad</th></tr></thead><tbody id="detalleTransferenciaProductos"></tbody></table></div><p id="detalleTransferenciaStock" class="small text-muted"></p><p id="detalleTransferenciaMovimientos" class="small text-muted mb-0"></p></div></div>
+    <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cerrar</button></div>
+</div></div></div>
+<div id="ssModalCamara" class="modal fade" tabindex="-1" aria-labelledby="ssCamaraTitulo" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 id="ssCamaraTitulo" class="modal-title">Escanear código</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div><div class="modal-body">{% include "componentes/vista_previa_camara.html" only %}<p id="ssCamaraEstado" class="form-text" role="status">Apunta la cámara al código del producto.</p></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancelar</button></div></div></div></div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+<script src="{% static 'js/transferencias.js' %}?v=sesion-1" defer></script>
+<script src="{% static 'js/escaneo_camara.js' %}?v=camara-4" defer></script>
+{% endblock %}

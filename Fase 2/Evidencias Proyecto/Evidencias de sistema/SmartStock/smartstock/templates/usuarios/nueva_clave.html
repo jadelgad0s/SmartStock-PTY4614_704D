@@ -1,0 +1,36 @@
+{% extends 'usuarios/base_acceso.html' %}
+{% block title %}Nueva contraseña - SmartStock{% endblock %}
+{% block acceso_content %}
+{% if validlink %}
+  <h1 id="titulo-acceso">Crear nueva contraseña</h1>
+  <p class="ss-auth-intro">Elige una nueva contraseña para volver a acceder a tu cuenta.</p>
+  <form method="post" data-auth-submit="Guardando contraseña…" aria-busy="false">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger ss-auth-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="ss-auth-field">
+      <label for="id_new_password1" class="form-label">Nueva contraseña</label>
+      <div class="ss-password-field">
+        <input type="password" name="new_password1" id="id_new_password1" class="form-control{% if form.new_password1.errors %} is-invalid{% endif %}" autocomplete="new-password" aria-describedby="password-help password1-error" required{% if form.new_password1.errors %} aria-invalid="true"{% endif %}>
+        <button type="button" class="ss-password-toggle" data-password-toggle="id_new_password1" aria-controls="id_new_password1" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+      </div>
+      <div id="password1-error" class="ss-auth-field-error"{% if form.new_password1.errors %} role="alert"{% endif %}>{% for error in form.new_password1.errors %}<p>{{ error }}</p>{% endfor %}</div>
+    </div>
+    <div class="ss-auth-field">
+      <label for="id_new_password2" class="form-label">Confirmar contraseña</label>
+      <div class="ss-password-field">
+        <input type="password" name="new_password2" id="id_new_password2" class="form-control{% if form.new_password2.errors %} is-invalid{% endif %}" autocomplete="new-password" aria-describedby="password2-error" required{% if form.new_password2.errors %} aria-invalid="true"{% endif %}>
+        <button type="button" class="ss-password-toggle" data-password-toggle="id_new_password2" aria-controls="id_new_password2" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+      </div>
+      <div id="password2-error" class="ss-auth-field-error"{% if form.new_password2.errors %} role="alert"{% endif %}>{% for error in form.new_password2.errors %}<p>{{ error }}</p>{% endfor %}</div>
+    </div>
+    <details id="password-help" class="ss-auth-password-help"><summary>Recomendaciones para tu contraseña</summary>{{ form.new_password1.help_text }}</details>
+    <button type="submit" class="btn btn-primary">Guardar contraseña</button>
+  </form>
+{% else %}
+  <span class="ss-auth-state-icon" aria-hidden="true"><i class="fa-solid fa-link-slash"></i></span>
+  <h1 id="titulo-acceso">Enlace inválido o vencido</h1>
+  <p class="ss-auth-intro">Este enlace ya se utilizó, ha caducado o no es válido. Solicita uno nuevo para recuperar tu cuenta.</p>
+  <a href="{% url 'recuperar_clave' %}" class="btn btn-primary">Solicitar otro enlace</a>
+{% endif %}
+<a href="/" class="ss-auth-back"><span aria-hidden="true">←</span>Volver a iniciar sesión</a>
+{% endblock %}

@@ -1,0 +1,101 @@
+name: Ejecutable de SmartStock para Windows
+
+on:
+  pull_request:
+    paths:
+      - desktop.py
+      - desktop_splash.html
+      - static/js/password_visibility.js
+      - tests/desktop/login.html
+      - icono.ico
+      - build-desktop.cmd
+      - requirements-desktop-build.txt
+      - .github/workflows/desktop-windows.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.7'
+          architecture: x64
+      - name: Compilar SmartStock.exe
+        shell: cmd
+        run: build-desktop.cmd
+      - name: Preparar Microsoft Edge WebView2
+        shell: pwsh
+        run: |
+          $id = '{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          $keys = @("HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\$id",
+                    "HKCU:\SOFTWARE\Microsoft\EdgeUpdate\Clients\$id")
+          function Get-WebView2Version {
+            $keys | ForEach-Object { Get-ItemPropertyValue -Path $_ -Name pv -ErrorAction SilentlyContinue } |
+              Where-Object { $_ -and $_ -ne '0.0.0.0' } | Select-Object -First 1
+          }
+          $version = Get-WebView2Version
+          if (-not $version) {
+            $setup = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebView2Setup.exe'
+            Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $setup
+            $signature = Get-AuthenticodeSignature $setup
+            if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft Corporation') {
+              throw 'Firma del instalador de WebView2 no válida.'
+            }
+            $install = Start-Process $setup -ArgumentList '/silent', '/install' -Wait -PassThru
+            if ($install.ExitCode -ne 0) { throw "No se pudo instalar WebView2: $($install.ExitCode)." }
+            $version = Get-WebView2Version
+          }
+          if (-not $version) { throw 'No se encontró WebView2 Runtime instalado.' }
+          Write-Host "Microsoft Edge WebView2 $version"
+      - name: Comprobar el arranque y el botón de contraseña
+        shell: pwsh
+        run: |
+          $fixture = Join-Path $env:RUNNER_TEMP 'smartstock-desktop-test'
+          New-Item -ItemType Directory -Path $fixture | Out-Null
+          Copy-Item tests/desktop/login.html (Join-Path $fixture 'index.html')
+          Copy-Item static/js/password_visibility.js $fixture
+          $server = Start-Process python -ArgumentList '-m', 'http.server', '19223', '--bind', '127.0.0.1' -WorkingDirectory $fixture -PassThru
+          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=19222'
+          $env:SMARTSTOCK_DESKTOP_LOG = Join-Path $env:RUNNER_TEMP 'smartstock-desktop.log'
+          try {
+            $url = 'http://127.0.0.1:19223/'
+            Invoke-WebRequest $url -MaximumRetryCount 5 -RetryIntervalSec 1 -TimeoutSec 2 | Out-Null
+            $app = Start-Process -FilePath .\dist\SmartStock.exe -ArgumentList '--url', $url -PassThru
+            $splash = $false
+            $loaded = $false
+            $clock = [Diagnostics.Stopwatch]::StartNew()
+            while ($clock.Elapsed.TotalSeconds -lt 45) {
+              if ($app.HasExited) { throw "SmartStock terminó con código $($app.ExitCode)." }
+              try {
+                $targets = Invoke-RestMethod -Uri http://127.0.0.1:19222/json/list -TimeoutSec 1
+                if ($targets | Where-Object { $_.type -eq 'page' -and $_.title -eq 'Iniciando SmartStock' }) {
+                  $splash = $true
+                }
+                if ($targets | Where-Object { $_.type -eq 'page' -and $_.title -eq 'SmartStock Windows Smoke' }) {
+                  $loaded = $true
+                  break
+                }
+              } catch {}
+              Start-Sleep -Milliseconds 150
+            }
+            if (-not $splash) { throw 'WebView2 no mostró la pantalla de carga de SmartStock.' }
+            if (-not $loaded) { throw 'WebView2 no confirmó el funcionamiento del botón de contraseña.' }
+          } finally {
+            if (Test-Path $env:SMARTSTOCK_DESKTOP_LOG) { Get-Content $env:SMARTSTOCK_DESKTOP_LOG }
+            if ($app -and -not $app.HasExited) { taskkill.exe /PID $app.Id /T /F }
+            Stop-Process -Id $server.Id -ErrorAction SilentlyContinue
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SmartStock-Windows-x64
+          path: dist/SmartStock.exe
+          if-no-files-found: error
+          retention-days: 30

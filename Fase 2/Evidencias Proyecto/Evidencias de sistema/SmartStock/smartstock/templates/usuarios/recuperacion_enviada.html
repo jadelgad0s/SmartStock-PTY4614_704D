@@ -1,0 +1,10 @@
+{% extends 'usuarios/base_acceso.html' %}
+{% block title %}Revisa tu correo - SmartStock{% endblock %}
+{% block acceso_content %}
+<span class="ss-auth-state-icon" aria-hidden="true"><i class="fa-regular fa-envelope"></i></span>
+<h1 id="titulo-acceso">Revisa tu correo</h1>
+<p class="ss-auth-intro">Si existe una cuenta activa asociada a ese correo, recibirás un enlace para crear una nueva contraseña.</p>
+<p class="ss-auth-note">Revisa también la carpeta de spam o correo no deseado. El enlace caduca en una hora.</p>
+<a href="/" class="btn btn-primary">Volver a iniciar sesión</a>
+<a href="{% url 'recuperar_clave' %}" class="ss-auth-secondary">Probar con otro correo</a>
+{% endblock %}

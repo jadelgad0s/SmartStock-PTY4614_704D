@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Iniciando SmartStock</title>
+    <style>
+        :root { color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            color: #f0fdfa;
+            background: radial-gradient(ellipse at 50% 25%, #155e57, #0a3433 55%, #092928);
+            text-align: center;
+        }
+        main { box-sizing: border-box; width: min(100%, 31rem); padding: 2rem; }
+        .mark {
+            display: grid;
+            place-items: center;
+            width: 4.5rem;
+            height: 4.5rem;
+            margin: 0 auto 1.35rem;
+            border: 1px solid #66c3b0;
+            border-radius: 1.25rem;
+            background: #236760;
+            color: #d3fff4;
+        }
+        h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -.045em; }
+        .subtitle { margin: .55rem 0 2.25rem; font-size: 1rem; color: #bce2d9; }
+        .track {
+            position: relative;
+            width: min(100%, 14rem);
+            height: .25rem;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+            border-radius: 1rem;
+            background: #437871;
+        }
+        .track::after {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 40%;
+            border-radius: inherit;
+            background: #8ee8d4;
+            animation: loading 1.5s ease-in-out infinite alternate;
+        }
+        .status { margin: 0; color: #d9f7ef; font-size: .9rem; }
+        @keyframes loading { to { transform: translateX(150%); } }
+        @media (prefers-reduced-motion: reduce) { .track::after { animation: none; } }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="mark" aria-hidden="true">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+        </div>
+        <h1>SmartStock</h1>
+        <p class="subtitle">Gestión de inventario</p>
+        <div class="track" aria-hidden="true"></div>
+        <p class="status" role="status">Conectando con SmartStock…</p>
+    </main>
+</body>
+</html>

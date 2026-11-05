@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Probando el login de SmartStock</title>
+    <script src="password_visibility.js" defer></script>
+</head>
+<body>
+    <form id="login-form">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" autocomplete="current-password">
+        <button type="button" data-password-toggle="password" aria-label="Mostrar contraseña">Ojo</button>
+    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const comprobar = setInterval(() => {
+                const oculto = Array.from(document.styleSheets).some(sheet =>
+                    Array.from(sheet.cssRules).some(rule =>
+                        rule.selectorText === '#login-form #password::-ms-reveal' &&
+                        rule.style.display === 'none'));
+                if (!oculto) return;
+                clearInterval(comprobar);
+
+                const campo = document.getElementById('password');
+                const boton = document.querySelector('[data-password-toggle="password"]');
+                campo.value = 'ClaveDePrueba123';
+                campo.focus();
+                boton.click();
+                const muestra = campo.type === 'text' && boton.getAttribute('aria-pressed') === 'true';
+                campo.blur();
+                boton.click();
+                const oculta = campo.type === 'password' && boton.getAttribute('aria-pressed') === 'false';
+                document.title = muestra && oculta && campo.value === 'ClaveDePrueba123'
+                    ? 'SmartStock Windows Smoke'
+                    : 'Error del botón de contraseña';
+            }, 50);
+        });
+    </script>
+</body>
+</html>

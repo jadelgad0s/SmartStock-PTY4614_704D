@@ -1,0 +1,13 @@
+{
+  "name": "smartstock-catalogo-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test escaneo_camara.test.cjs sms.test.cjs ubicaciones.test.cjs reportes.test.cjs acceso.test.cjs productos.test.cjs movimientos.test.cjs mermas.test.cjs bodegas.test.cjs transferencias.test.cjs auditoria.test.cjs usuarios.test.cjs dashboard.test.cjs notificaciones.test.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

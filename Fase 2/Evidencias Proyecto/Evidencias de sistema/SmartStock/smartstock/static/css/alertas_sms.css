@@ -1,0 +1,44 @@
+.ss-sms [hidden],#modalSMS [hidden] { display:none!important; }
+.ss-sms-service { padding:1rem; gap:.5rem; }
+.ss-sms-service-heading { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem 1rem; }
+.ss-sms-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; margin:1rem 0; }
+.ss-sms-summary > div { padding:1rem; }
+.ss-sms-summary dt { font-size:.8rem; color:var(--slate-600); font-weight:500; }
+.ss-sms-summary dd { font-size:1.8rem; font-weight:700; margin:.25rem 0; }
+.ss-sms-filter-card > summary { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; padding:1rem; list-style:none; cursor:pointer; }
+.ss-sms-filter-card > summary::-webkit-details-marker { display:none; }
+.ss-sms-filter-card > summary > i { margin-left:auto; }
+.ss-sms-filters { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; align-items:end; padding:0 1rem 1rem; }
+.ss-sms-search { grid-column:span 2; }
+.ss-sms-filter-card:not([open]) > form { display:none; }
+.ss-sms-results td { overflow-wrap:anywhere; }
+.ss-sms-results td:last-child .btn { white-space:nowrap; }
+.ss-sms-name { display:block; font-weight:600; }
+.ss-sms-meta { display:block; font-size:.75rem; margin-top:.25rem; color:var(--slate-600); }
+.ss-sms-status { display:inline-block; padding:.3rem .5rem; border-radius:.4rem; font-size:.75rem; background:#e2e8f0; color:#334155; }
+.ss-sms-status.pendiente { background:#fef3c7; color:#92400e; }.ss-sms-status.entregado { background:#dcfce7; color:#166534; }
+.ss-sms-status.aceptado,.ss-sms-status.enviado { background:#dbeafe; color:#1e40af; }
+.ss-sms-status.rechazado,.ss-sms-status.no_entregado { background:#fee2e2; color:#991b1b; }
+.ss-sms-status.incierto,.ss-sms-status.enviando { background:#ffedd5; color:#9a3412; }
+.ss-sms-pages { display:flex; flex-wrap:wrap; gap:.35rem; }.ss-sms-pages button { min-width:44px; }
+.ss-sms-record { border:1px solid var(--bs-border-color,#cbd5e1); border-radius:.5rem; padding:1rem; margin-bottom:1rem; }
+.ss-sms-record dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem 1rem; margin:.75rem 0; }.ss-sms-record dl > div { min-width:0; }
+.ss-sms-record dt { font-size:.75rem; color:var(--slate-600); font-weight:500; }.ss-sms-record dd { margin:0; overflow-wrap:anywhere; }
+.ss-sms-message { white-space:pre-wrap; overflow-wrap:anywhere; padding:.75rem; margin:.75rem 0 0; background:var(--bs-tertiary-bg,#f1f5f9); border-radius:.4rem; font-family:inherit; font-size:.85rem; }
+.ss-sms .btn:disabled,#modalSMS .btn:disabled { opacity:1; color:var(--bs-secondary-color,#64748b); background:var(--bs-tertiary-bg,#f1f5f9); border-color:var(--bs-border-color,#cbd5e1); box-shadow:none; }
+@media(max-width:991.98px) { .ss-sms-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }.ss-sms-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:575.98px) {
+ .ss-sms-summary { gap:.65rem; }.ss-sms-summary > div { padding:.8rem; }.ss-sms-summary dt { font-size:.75rem; }
+ .ss-sms-filters input,.ss-sms-filters select { font-size:16px; }
+ .ss-sms-results thead { display:none; }.ss-sms-results tbody { display:grid; gap:.75rem; padding:.75rem; }
+ .ss-main .ss-sms-results .table { min-width:0; width:100%; }
+ .ss-sms-results tr.ss-sms-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; padding:1rem; border:1px solid var(--slate-200); border-radius:.6rem; }
+ .ss-sms-results td { display:block; padding:0!important; border:0; min-width:0; }.ss-sms-results td::before { content:attr(data-label); display:block; font-size:.75rem; color:var(--slate-600); margin-bottom:.25rem; }
+ .ss-sms-results td:first-child,.ss-sms-results td:nth-child(3),.ss-sms-results td:last-child,.ss-sms-results td[colspan] { grid-column:1/-1; }
+ .ss-sms-results td:first-child::before,.ss-sms-results td:last-child::before { display:none; }
+ .ss-sms-record dl { grid-template-columns:minmax(0,1fr); }
+}
+:root[data-bs-theme=dark] .ss-sms-status { background:#334155; color:#e2e8f0; }
+:root[data-bs-theme=dark] .ss-sms-status.pendiente { background:#713f12; color:#fef08a; }
+:root[data-bs-theme=dark] .ss-sms-status.entregado { background:#14532d; color:#bbf7d0; }
+:root[data-bs-theme=dark] .ss-sms-status.rechazado,:root[data-bs-theme=dark] .ss-sms-status.no_entregado { background:#7f1d1d; color:#fecaca; }

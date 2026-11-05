@@ -1,0 +1,258 @@
+/* SmartStock - navegación anclada al viewport y tema de la aplicación.
+   Este archivo se carga después de Bootstrap y responsive.css. */
+
+/* La altura del menú no depende del contenido extenso del Dashboard. */
+.ss-app-layout > .ss-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+.ss-sidebar > a { flex-shrink: 0; }
+.ss-sidebar-links {
+  flex: 1 1 auto;
+  /* Bootstrap permite wrap en .nav: aquí el espacio debe recuperarse con scroll. */
+  flex-wrap: nowrap;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.ss-sidebar-links > * { flex-shrink: 0; }
+.ss-sidebar-profile { flex: 0 0 auto; padding-top: .5rem; }
+.ss-profile-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  min-width: 0;
+}
+.ss-profile-card > div { min-width: 0; }
+.ss-profile-card strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-theme-toggle { min-height: 38px; min-width: 40px; }
+.ss-theme-toggle i { font-size: 1rem; }
+@media screen and (max-width: 991.98px) {
+  .ss-app-layout > .ss-sidebar {
+    position: fixed;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+  .ss-sidebar-links { padding-right: .15rem; }
+}
+@media print {
+  .ss-app-layout > .ss-sidebar { display: none !important; }
+  :root[data-bs-theme="dark"] .ss-app-layout,
+  :root[data-bs-theme="dark"] .ss-main { background: #fff !important; color: #000 !important; }
+}
+/* Tokens: solo se cambia el tema de las páginas de la aplicación autenticada. */
+:root[data-bs-theme="dark"] {
+  color-scheme: dark;
+  --ss-dark-bg: #0d1624;
+  --ss-dark-panel: #162334;
+  --ss-dark-panel-alt: #1c2d41;
+  --ss-dark-line: #31445a;
+  --ss-dark-ink: #e7eef8;
+  --ss-dark-subtle: #a9b9cd;
+  --slate-50: #172639;
+  --slate-100: #223347;
+  --slate-200: #31445a;
+  --slate-600: #a9b9cd;
+  --slate-800: #e7eef8;
+  --teal-50: #173b3b;
+  --teal-600: #52d6c5;
+  --teal-700: #15877b;
+}
+:root[data-bs-theme="dark"] body {
+  background-color: var(--ss-dark-bg);
+  color: var(--ss-dark-ink);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-main,
+:root[data-bs-theme="dark"] .ss-app-layout .ss-main[style] {
+  background: var(--ss-dark-bg) !important;
+  color: var(--ss-dark-ink);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .bg-sidebar,
+:root[data-bs-theme="dark"] .ss-app-layout .bg-topbar {
+  background: var(--ss-dark-panel) !important;
+  color: var(--ss-dark-ink);
+  border-color: var(--ss-dark-line) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .text-sidebar-muted,
+:root[data-bs-theme="dark"] .ss-app-layout .nav-link.sidebar-item {
+  color: var(--ss-dark-subtle);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .nav-link.sidebar-item:hover {
+  background: var(--ss-dark-panel-alt);
+  color: var(--ss-dark-ink);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .nav-link.sidebar-item.active {
+  background: #164b49;
+  color: #8cf5e6;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-profile-card {
+  background: var(--ss-dark-panel-alt);
+  border-color: var(--ss-dark-line);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-profile-card strong,
+:root[data-bs-theme="dark"] .ss-app-layout .ss-profile-card [id^="user-name"],
+:root[data-bs-theme="dark"] .ss-app-layout .ss-sidebar a[href="/dashboard/"] > span,
+:root[data-bs-theme="dark"] .ss-app-layout [style*="color: #0f172a"],
+:root[data-bs-theme="dark"] .ss-app-layout [style*="color: #1e293b"],
+:root[data-bs-theme="dark"] .ss-app-layout .text-dark,
+:root[data-bs-theme="dark"] .modal [style*="color: #0f172a"],
+:root[data-bs-theme="dark"] .modal .text-dark {
+  color: var(--ss-dark-ink) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-profile-card [id^="user-role"],
+:root[data-bs-theme="dark"] .ss-app-layout .text-muted,
+:root[data-bs-theme="dark"] .modal .text-muted {
+  color: var(--ss-dark-subtle) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .card,
+:root[data-bs-theme="dark"] .ss-app-layout .card-header,
+:root[data-bs-theme="dark"] .modal-content,
+:root[data-bs-theme="dark"] .modal-header,
+:root[data-bs-theme="dark"] .modal-footer,
+:root[data-bs-theme="dark"] .modal .bg-white,
+:root[data-bs-theme="dark"] .ss-notif-menu,
+:root[data-bs-theme="dark"] .ss-notif-header,
+:root[data-bs-theme="dark"] .ss-notif-toast,
+:root[data-bs-theme="dark"] .ss-notif-toast .toast-header {
+  background: var(--ss-dark-panel) !important;
+  color: var(--ss-dark-ink);
+  border-color: var(--ss-dark-line) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .card-header { border-bottom: 1px solid var(--ss-dark-line); }
+:root[data-bs-theme="dark"] .ss-app-layout .table {
+  --bs-table-bg: var(--ss-dark-panel);
+  --bs-table-color: var(--ss-dark-ink);
+  --bs-table-border-color: var(--ss-dark-line);
+  --bs-table-striped-bg: var(--ss-dark-panel-alt);
+  --bs-table-hover-bg: var(--ss-dark-panel-alt);
+  --bs-table-hover-color: var(--ss-dark-ink);
+  color: var(--ss-dark-ink);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .table-custom th,
+:root[data-bs-theme="dark"] .ss-app-layout .table-custom td {
+  border-color: var(--ss-dark-line) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .table-custom th,
+:root[data-bs-theme="dark"] .ss-app-layout .list-group-item {
+  background: var(--ss-dark-panel-alt) !important;
+  color: var(--ss-dark-ink);
+  border-color: var(--ss-dark-line);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .list-group {
+  --bs-list-group-bg: var(--ss-dark-panel);
+  --bs-list-group-color: var(--ss-dark-ink);
+  --bs-list-group-border-color: var(--ss-dark-line);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .form-control,
+:root[data-bs-theme="dark"] .ss-app-layout .form-select,
+:root[data-bs-theme="dark"] .ss-app-layout .input-group-text,
+:root[data-bs-theme="dark"] .modal .form-control,
+:root[data-bs-theme="dark"] .modal .form-select,
+:root[data-bs-theme="dark"] .modal .input-group-text {
+  background: var(--ss-dark-panel-alt) !important;
+  color: var(--ss-dark-ink) !important;
+  border-color: var(--ss-dark-line) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .form-control::placeholder,
+:root[data-bs-theme="dark"] .modal .form-control::placeholder { color: var(--ss-dark-subtle); }
+:root[data-bs-theme="dark"] .ss-app-layout .bg-light,
+:root[data-bs-theme="dark"] .ss-app-layout .bg-white {
+  background: var(--ss-dark-panel-alt) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-menu-toggle,
+:root[data-bs-theme="dark"] .ss-sidebar-close {
+  background: var(--ss-dark-panel-alt);
+  color: var(--ss-dark-ink) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .bg-primary-soft {
+  background: #194743 !important;
+  color: #8cf5e6 !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .btn-outline-primary {
+  border-color: #46c5b5;
+  color: #8cf5e6;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .btn-outline-primary:hover {
+  color: #0d1624; background: #8cf5e6;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .btn-primary {
+  background: #0f766e;
+  color: white;
+  border-color: #0f766e;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .text-primary { color: #8cf5e6 !important; }
+:root[data-bs-theme="dark"] .ss-app-layout .ss-merma-observacion {
+  background: var(--ss-dark-panel-alt) !important;
+  border-color: var(--ss-dark-line) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-merma-observacion-texto,
+:root[data-bs-theme="dark"] .ss-app-layout .ss-merma-observacion-etiqueta {
+  color: var(--ss-dark-subtle) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-recent-transactions-table tr.ss-trx-item,
+:root[data-bs-theme="dark"] .ss-app-layout .ss-recent-transactions-table td.ss-trx-operator,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaProductos tbody tr,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMovimientos tbody tr,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMermas tbody tr,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaAuditoria tbody tr,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaUsuarios tbody tr {
+  background: var(--ss-dark-panel) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout #tablaProductos tbody td,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMovimientos tbody td,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMermas tbody td,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaAuditoria tbody td,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaUsuarios tbody td,
+:root[data-bs-theme="dark"] .ss-app-layout #tabla-recientes tbody td {
+  background: transparent;
+  color: var(--ss-dark-ink);
+  border-color: var(--ss-dark-line) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout #tablaProductos tbody td::before,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMovimientos tbody td::before,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMermas tbody td::before,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaAuditoria tbody td::before,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaUsuarios tbody td::before,
+:root[data-bs-theme="dark"] .ss-app-layout #tabla-recientes tbody td::before {
+  color: var(--ss-dark-subtle);
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-trx-operator,
+:root[data-bs-theme="dark"] .ss-app-layout .ss-trx-product,
+:root[data-bs-theme="dark"] .ss-app-layout #tablaUsuarios tbody td:nth-child(2),
+:root[data-bs-theme="dark"] .ss-app-layout #tablaProductos tbody td:nth-child(2) {
+  background: var(--ss-dark-panel-alt) !important;
+}
+:root[data-bs-theme="dark"] .ss-app-layout .ss-movement-input-group { background: var(--ss-dark-panel-alt); }
+:root[data-bs-theme="dark"] .ss-app-layout .ss-movement-camera {
+  background: var(--ss-dark-panel-alt); color: #8cf5e6; border-color: var(--ss-dark-line);
+}
+:root[data-bs-theme="dark"] .ss-notif-menu,
+:root[data-bs-theme="dark"] .ss-notif-toast { border: 1px solid var(--ss-dark-line); }
+:root[data-bs-theme="dark"] .ss-notif-item {
+  border-color: var(--ss-dark-line);
+  color: var(--ss-dark-ink);
+}
+:root[data-bs-theme="dark"] .ss-notif-item,
+:root[data-bs-theme="dark"] .ss-notif-item.bg-light {
+  background: var(--ss-dark-panel-alt) !important;
+  color: var(--ss-dark-ink);
+}
+:root[data-bs-theme="dark"] .ss-notif-item small { color: var(--ss-dark-subtle) !important; }
+:root[data-bs-theme="dark"] .ss-notif-header button { color: #8cf5e6; }
+:root[data-bs-theme="dark"] .ss-notif-toast .toast-body { color: var(--ss-dark-ink); }
+:root[data-bs-theme="dark"] #ss-notif-btn.ss-has-notifications i { color: #fb7185; }
+
+/* La impresión siempre conserva contrastes de papel. */
+@media print {
+  :root[data-bs-theme="dark"] body { background: #fff !important; color: #000 !important; }
+  :root[data-bs-theme="dark"] .ss-app-layout .table-custom th { background: #f8fafc !important; color: black !important; }
+  :root[data-bs-theme="dark"] .ss-app-layout .table-custom td { background: #fff !important; color: black !important; }
+  :root[data-bs-theme="dark"] .ss-app-layout .card { background: #fff !important; color: black !important; }
+}

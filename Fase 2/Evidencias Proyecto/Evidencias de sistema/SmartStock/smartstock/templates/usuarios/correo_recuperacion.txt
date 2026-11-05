@@ -1,0 +1,13 @@
+Hola:
+
+Recibimos una solicitud para cambiar la contraseña de tu cuenta de SmartStock.
+
+Crea tu nueva contraseña desde este enlace:
+{{ protocol }}://{{ domain }}{% url 'establecer_nueva_clave' uidb64=uid token=token %}
+
+El enlace vence en 1 hora y deja de funcionar cuando actualizas tu contraseña.
+
+Si no solicitaste este cambio, ignora este correo. Tu contraseña actual seguirá funcionando.
+
+Equipo SmartStock
+Gestión inteligente de inventarios

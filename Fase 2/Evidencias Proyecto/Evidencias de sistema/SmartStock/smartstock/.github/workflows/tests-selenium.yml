@@ -1,0 +1,21 @@
+name: Pruebas funcionales con Selenium
+
+on:
+  pull_request:
+    paths: ['apps/**', 'config/**', 'static/**', 'templates/**', 'requirements-web.txt', '.github/workflows/tests-selenium.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  selenium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.7'
+      - run: python -m pip install -r requirements-web.txt selenium==4.52.0
+      - run: python manage.py test apps.core.selenium_suite --settings=config.settings.testing --verbosity 2 --noinput

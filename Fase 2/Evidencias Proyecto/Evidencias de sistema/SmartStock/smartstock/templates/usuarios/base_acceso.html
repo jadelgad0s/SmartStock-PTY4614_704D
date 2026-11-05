@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/password_visibility.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/acceso.css' %}?v=1">
+{% endblock %}
+{% block content %}
+<div class="ss-auth-layout">
+  <aside class="ss-auth-brand-panel" aria-label="SmartStock">
+    {% include 'usuarios/marca_acceso.html' %}
+    <div class="ss-auth-brand-copy">
+      <p class="ss-auth-eyebrow">Gestión de inventario</p>
+      <p class="ss-auth-brand-title">Tu inventario,<br>bajo control.</p>
+      <p class="ss-auth-brand-description">Gestiona productos, entradas, salidas y transferencias entre tus bodegas.</p>
+    </div>
+    <p class="ss-auth-brand-footer">SmartStock · Gestión de inventario para tu negocio</p>
+  </aside>
+  <main class="ss-auth-form-panel">
+    <section class="ss-auth-form ss-login-form-card" aria-labelledby="titulo-acceso">
+      <div class="ss-auth-mobile-brand d-lg-none">{% include 'usuarios/marca_acceso.html' %}</div>
+      {% block acceso_content %}{% endblock %}
+    </section>
+  </main>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'js/password_visibility.js' %}?v=1" defer></script>
+<script src="{% static 'js/acceso.js' %}?v=1" defer></script>
+{% block acceso_scripts %}{% endblock %}
+{% endblock %}

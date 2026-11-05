@@ -1,0 +1,75 @@
+/* Historial de mermas: filtros, tabla y tarjetas compactas. */
+.ss-loss-card { overflow: hidden; }
+.ss-loss-card .table-responsive { position: relative; }
+.ss-loss-filters { display: grid; grid-template-columns: minmax(160px, 2fr) minmax(145px, 1fr) minmax(120px, 1fr) repeat(2, minmax(135px, 1fr)) auto; gap: .8rem; align-items: end; }
+.ss-loss-filters > div, .ss-loss-filter-fields > div { min-width: 0; }
+.ss-loss-filter-fields { display: contents; }
+.ss-loss-toggle { display: none; }
+.ss-loss-filters .form-label { font-size: .8rem; font-weight: 600; margin-bottom: .4rem; }
+.ss-loss-filters .form-control, .ss-loss-filters .form-select, .ss-loss-filters .btn { min-height: 44px; }
+.ss-loss-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; padding: 1rem; border-top: 1px solid var(--slate-200); }
+#paginacionMermas { min-width: 0; max-width: 100%; }
+#paginacionMermas .pagination { flex-wrap: wrap; gap: .25rem; margin: 0; justify-content: center; }
+#paginacionMermas .page-link { min-width: 40px; min-height: 44px; border-radius: .4rem; display: inline-flex; align-items: center; justify-content: center; }
+#paginacionMermas .active .page-link { color: white; background: #0f766e; border-color: #0f766e; }
+#paginacionMermas .ss-loss-ellipsis { display: inline-block; padding: .5rem; }
+#tablaMermas .ss-loss-product strong { display: block; color: var(--slate-800); overflow-wrap: anywhere; }
+#tablaMermas .ss-loss-sku { display: block; font-size: .75rem; color: var(--bs-secondary-color, #64748b); margin-top: .2rem; overflow-wrap: anywhere; }
+#tablaMermas .ss-loss-date span { display: block; }
+#tablaMermas .ss-loss-time { font-size: .75rem; color: var(--bs-secondary-color, #64748b); }
+#tablaMermas .ss-loss-quantity { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ss-loss-reason-tag { display: inline-block; background: #fef3c7; color: #92400e; font-weight: 600; font-size: .75rem; line-height: 1.3; padding: .3rem .55rem; border-radius: .4rem; overflow-wrap: anywhere; }
+.ss-loss-preview { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; overflow-wrap: anywhere; margin-top: .35rem; font-size: .8rem; line-height: 1.4; color: var(--bs-secondary-color, #64748b); }
+#tablaMermas .ss-loss-person { overflow-wrap: anywhere; }
+#tablaMermas .ss-loss-actions .btn { white-space: nowrap; min-height: 40px; }
+#tablaMermas .ss-loss-units { display: none; }
+.ss-loss-detail { display: grid; grid-template-columns: 35% minmax(0, 1fr); gap: .75rem; margin: 0; }
+.ss-loss-detail dt { color: var(--bs-secondary-color, #64748b); font-size: .8rem; }
+.ss-loss-detail dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ss-loss-product-pages { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.ss-loss-product-pages .btn { flex-shrink: 0; min-height: 44px; }
+.ss-loss-product-pages > span { text-align: center; }
+#modalNuevaMerma .modal-content { max-height: calc(100dvh - 1rem); }
+#formNuevaMerma { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+#modalNuevaMerma .modal-body { overflow-y: auto; }
+#modalNuevaMerma .modal-footer { flex-shrink: 0; }
+#modalNuevaMerma .modal-footer .btn { min-height: 44px; }
+#mermaResumenConfirmacion, #mermaStockDisponible { overflow-wrap: anywhere; }
+@media (max-width: 1199.98px) {
+    .ss-loss-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ss-loss-search { grid-column: 1 / -1; }
+}
+@media screen and (max-width: 575.98px) {
+    .ss-loss-filters { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }
+    .ss-loss-search { grid-column: 1; }
+    .ss-loss-toggle { display: block; }
+    .ss-loss-filter-fields { display: none; grid-column: 1 / -1; }
+    .ss-loss-filter-fields.is-open { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+    .ss-loss-filter-reason, .ss-loss-filter-fields > .btn { grid-column: 1 / -1; }
+    .ss-loss-filters input[type="date"] { min-width: 0; width: 100%; padding-inline: .45rem; }
+    .ss-loss-order { display: none; }
+    .ss-loss-footer { flex-direction: column; text-align: center; }
+    .ss-main #tablaMermas tbody { padding: .65rem; gap: .65rem; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem .65rem; padding: .8rem; align-items: center; background: var(--bs-body-bg, #fff); }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > td { display: block; min-width: 0; padding: 0 !important; border: 0; text-align: left !important; background: transparent; order: 0; font-size: .8rem; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > td::before { display: none; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-product { grid-column: 1 / -1; grid-row: 1; font-size: .9rem; line-height: 1.4; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-reason { grid-column: 1 / -1; grid-row: 2; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-date { grid-column: 1; grid-row: 3; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-date span { display: inline; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-date .ss-loss-time { margin-left: .4rem; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-quantity { grid-column: 2; grid-row: 3; text-align: right !important; font-size: 1.1rem; }
+    #tablaMermas .ss-loss-units { display: inline; font-size: .7rem; font-weight: 400; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-person { grid-column: 1; grid-row: 4; color: var(--bs-secondary-color, #64748b); }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-person::before { content: 'Responsable: '; display: inline; font: inherit; text-transform: none; letter-spacing: normal; }
+    .ss-main #tablaMermas tbody tr.ss-loss-row > .ss-loss-actions { grid-column: 2; grid-row: 4; }
+    #tablaMermas .ss-loss-actions .btn { min-height: 44px; }
+    #modalNuevaMerma .row > div + div { margin-top: .75rem; }
+    .ss-loss-detail { grid-template-columns: minmax(0, 1fr); gap: .25rem; }
+    .ss-loss-detail dd { margin-bottom: .6rem; }
+}
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMermas .ss-loss-row { background: var(--ss-dark-panel) !important; border-color: var(--ss-dark-line); }
+:root[data-bs-theme="dark"] .ss-app-layout #tablaMermas .ss-loss-row > td { background: transparent !important; }
+:root[data-bs-theme="dark"] #tablaMermas .ss-loss-quantity { color: #ff9292 !important; }
+:root[data-bs-theme="dark"] .ss-loss-footer { border-color: var(--ss-dark-line); }
+:root[data-bs-theme="dark"] :is(#mostrarFiltrosMermas, #limpiarFiltrosMermas, .ss-loss-actions .btn, .ss-loss-product-pages .btn) { color: var(--ss-dark-ink); border-color: var(--ss-dark-subtle); }

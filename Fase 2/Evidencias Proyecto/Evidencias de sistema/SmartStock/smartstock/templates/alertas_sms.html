@@ -1,0 +1,48 @@
+{% extends 'bodegas.html' %}
+{% load static %}
+{% block title %}Alertas SMS - SmartStock{% endblock %}
+{% block extra_head %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/alertas_sms.css' %}?v=1">{% endblock %}
+{% block bodegas_enlace_activo %}{% endblock %}
+{% block enlace_sms %}{% include 'componentes/enlace_sms.html' with activo=True only %}{% endblock %}
+{% block bodega_contenido %}
+<div class="ss-sms">
+    <div class="ss-bodegas-heading"><div><h4 class="fw-bold mb-1">Alertas SMS</h4><p class="small text-muted mb-0">Revisa los avisos de stock y gestiona los envíos pendientes.</p></div><button id="actualizarSMS" type="button" class="btn btn-outline-secondary" disabled><i class="fa-solid fa-rotate me-2" aria-hidden="true"></i>Actualizar</button></div>
+    <div id="errorSMS" class="alert alert-danger" role="alert" hidden></div><button type="button" class="btn btn-outline-secondary mb-3" id="reintentarSMS" hidden>Reintentar carga</button>
+    <div id="panelSMS" hidden>
+        <section class="card ss-sms-service" aria-label="Estado del servicio SMS">
+            <div class="ss-sms-service-heading"><strong id="servicioSMS">Consultando servicio…</strong><span id="presupuestoSMS" class="small text-muted"></span></div>
+            <p id="destinatariosSMS" class="small text-muted mb-0"></p>
+            <ul id="configuracionSMS" class="small mb-0" hidden></ul>
+        </section>
+        <dl class="ss-sms-summary" aria-label="Resumen de todos los avisos SMS">
+            <div class="card"><dt>Pendientes</dt><dd id="totalPendientesSMS">—</dd><span class="small text-muted">En toda la cola</span></div>
+            <div class="card"><dt>Por revisar ahora</dt><dd id="totalRevisablesSMS">—</dd><span class="small text-muted">Se comprobará su vigencia</span></div>
+            <div class="card"><dt>Por confirmar</dt><dd id="totalInciertosSMS">—</dd><span class="small text-muted">En proceso o sin resultado confirmado</span></div>
+            <div class="card"><dt>Intentos disponibles hoy</dt><dd id="totalDisponiblesSMS">—</dd><span id="zonaSMS" class="small text-muted"></span></div>
+        </dl>
+        <details id="detalleFiltrosSMS" class="card ss-sms-filter-card" open><summary><span class="fw-semibold">Filtros del historial</span><span id="resumenFiltrosSMS" class="small text-muted"></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
+            <form id="filtrosSMS" class="ss-sms-filters" aria-label="Filtrar historial de SMS">
+                <div class="ss-sms-search"><label for="buscarSMS">Buscar aviso</label><input id="buscarSMS" class="form-control" type="search" maxlength="200" placeholder="Producto, SKU, bodega o código de error"></div>
+                <div><label for="estadoSMS">Estado</label><select id="estadoSMS" class="form-select"><option value="PENDIENTE">Pendiente</option></select></div>
+                <div><label for="bodegaSMS">Bodega</label><select id="bodegaSMS" class="form-select"><option value="">Todas las bodegas</option></select></div>
+                <div><label for="desdeSMS">Desde</label><input id="desdeSMS" type="date" class="form-control"></div><div><label for="hastaSMS">Hasta</label><input id="hastaSMS" type="date" class="form-control"></div>
+                <button id="limpiarSMS" class="btn btn-outline-secondary" type="button">Limpiar filtros</button>
+            </form>
+        </details>
+        <section aria-labelledby="tituloHistorialSMS">
+            <div class="ss-bodegas-heading my-3"><div><h5 id="tituloHistorialSMS" class="fw-bold mb-1">Historial de avisos</h5><p id="ayudaProcesarSMS" class="small text-muted mb-0">Revisa tandas de hasta 3 pendientes que coincidan con los filtros. Procesar puede consumir saldo de Twilio.</p></div><button id="prepararSMS" type="button" class="btn btn-primary" aria-describedby="ayudaProcesarSMS" disabled><i class="fa-solid fa-paper-plane me-2" aria-hidden="true"></i>Procesar pendientes</button></div>
+            <p class="small text-muted">Los envíos nuevos se intentan automáticamente. Abrir o actualizar esta pantalla conserva la cola. “Aceptado por Twilio” todavía no significa entregado al celular.</p>
+            <div id="errorListaSMS" class="alert alert-danger" role="alert" hidden></div><button id="reintentarListaSMS" type="button" class="btn btn-outline-secondary mb-3" hidden>Reintentar historial</button>
+            <div class="card ss-sms-results"><div class="table-responsive"><table class="table table-custom mb-0"><caption class="visually-hidden">Historial de alertas SMS y próximos intentos</caption><thead><tr><th>Producto y bodega</th><th>Destinatario</th><th>Estado</th><th>Intentos</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="filasSMS" aria-busy="false"></tbody></table></div><div class="ss-bodegas-footer"><span id="conteoSMS" class="small text-muted" role="status" tabindex="-1"></span><nav id="paginasSMS" class="ss-sms-pages" aria-label="Páginas del historial SMS"></nav></div></div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+{% block bodega_modales %}
+<div id="modalSMS" class="modal fade ss-warehouse-modal" tabindex="-1" aria-labelledby="tituloModalSMS" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloModalSMS" class="modal-title">Detalle del aviso SMS</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div class="modal-body"><p id="estadoModalSMS" class="small text-muted" role="status"></p><div id="errorModalSMS" class="alert alert-danger" role="alert" hidden></div><div id="contenidoModalSMS"></div><p id="ayudaModalSMS" class="small text-muted mb-0"></p></div>
+    <div class="modal-footer"><button id="cerrarModalSMS" type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><button id="consultarResultadoSMS" type="button" class="btn btn-outline-secondary" hidden>Actualizar historial</button><button id="cancelarAvisoSMS" type="button" class="btn btn-outline-warning" hidden>Cancelar aviso</button><button id="procesarAvisoSMS" type="button" class="btn btn-primary" hidden>Procesar este SMS</button><button id="confirmarModalSMS" type="button" class="btn btn-primary" hidden disabled>Confirmar procesamiento</button></div>
+</div></div></div>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'js/alertas_sms.js' %}?v=sesion-1" defer></script>{% endblock %}

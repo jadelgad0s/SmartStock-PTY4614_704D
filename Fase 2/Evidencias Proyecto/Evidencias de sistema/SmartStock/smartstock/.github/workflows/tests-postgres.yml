@@ -1,0 +1,50 @@
+name: Pruebas de inventario en PostgreSQL
+
+on:
+  pull_request:
+    paths: ['apps/**', 'config/**', 'requirements-web.txt', '.github/workflows/tests-postgres.yml']
+  push:
+    branches: [main]
+    paths: ['apps/**', 'config/**', 'requirements-web.txt', '.github/workflows/tests-postgres.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  django-postgres:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: smartstock_pruebas
+          POSTGRES_USER: smartstock_test
+          POSTGRES_PASSWORD: password-only-for-isolated-ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U smartstock_test -d smartstock_pruebas"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.testing
+      SS_TEST_POSTGRES: 'true'
+      SS_TEST_DB_NAME: smartstock_pruebas
+      SS_TEST_DB_USER: smartstock_test
+      SS_TEST_DB_PASSWORD: password-only-for-isolated-ci
+      SS_TEST_DB_HOST: 127.0.0.1
+      SS_TEST_DB_PORT: '5432'
+      SECRET_KEY: isolated-ci-key-not-a-production-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.7'
+          cache: pip
+          cache-dependency-path: requirements-web.txt
+      - run: python -m pip install -r requirements-web.txt
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - name: Comprobar motor real
+        run: python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection(); assert connection.vendor == 'postgresql'"
+      - run: python manage.py test --verbosity 2 --noinput

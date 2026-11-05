@@ -1,0 +1,30 @@
+{% extends 'usuarios/base_acceso.html' %}
+{% load static %}
+{% block title %}Iniciar sesión - SmartStock{% endblock %}
+{% block acceso_content %}
+<h1 id="titulo-acceso">Bienvenido de vuelta</h1>
+<p class="ss-auth-intro">Ingresa tu correo y contraseña para acceder a SmartStock.</p>
+<div id="alert-box" class="alert alert-danger ss-auth-error" role="alert" tabindex="-1" hidden></div>
+<form id="login-form" method="post" action="{% url 'login_web' %}" aria-busy="false">
+  {% csrf_token %}
+  <div class="ss-auth-field">
+    <label for="email" class="form-label">Correo electrónico</label>
+    <input type="email" id="email" name="email" class="form-control" placeholder="nombre@empresa.cl" maxlength="254" required autocomplete="username" autocapitalize="off" spellcheck="false" inputmode="email">
+  </div>
+  <div class="ss-auth-field">
+    <div class="ss-auth-password-label">
+      <label for="password" class="form-label">Contraseña</label>
+      <a href="{% url 'recuperar_clave' %}" class="text-primary text-decoration-none">¿Olvidaste tu contraseña?</a>
+    </div>
+    <div class="ss-password-field">
+      <input type="password" id="password" name="password" class="form-control" placeholder="Tu contraseña" required autocomplete="current-password">
+      <button type="button" class="ss-password-toggle" data-password-toggle="password" aria-controls="password" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+    </div>
+  </div>
+  <button id="login-submit" type="submit" class="btn btn-primary">Iniciar sesión</button>
+</form>
+<footer>
+  <a href="{% url 'contacto_page' %}" class="ss-auth-secondary">Contacto</a>
+</footer>
+{% endblock %}
+{% block acceso_scripts %}<script src="{% static 'js/login.js' %}?v=roles-2" defer></script>{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'usuarios/base_acceso.html' %}
+{% block title %}Contacto - SmartStock{% endblock %}
+{% block acceso_content %}
+<h1 id="titulo-acceso">Contacta a SmartStock</h1>
+<p class="ss-auth-intro">Escríbenos si necesitas ayuda con tu cuenta, tienes dudas sobre SmartStock o quieres solicitar una demostración.</p>
+<p class="ss-auth-note text-break">contacto@smartstockchile.cl</p>
+<a href="mailto:contacto@smartstockchile.cl" class="btn btn-primary">Escribir a SmartStock</a>
+<a href="{% url 'login_page' %}" class="ss-auth-back"><span aria-hidden="true">←</span>Volver a iniciar sesión</a>
+{% endblock %}

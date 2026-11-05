@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard - SmartStock{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR CON SVG -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+        
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% include "componentes/enlace_inicio_bodega.html" only %}
+            <li class="nav-item">
+                <a href="/dashboard/" class="nav-link sidebar-item active"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/productos/" class="nav-link sidebar-item"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a>
+            </li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" only %}
+            
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li>
+                <a href="/movimientos/" class="nav-link sidebar-item"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a>
+            </li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li>
+                <a href="/mermas/" class="nav-link sidebar-item"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a>
+            </li>
+            <li id="menu-auditoria" hidden>
+                <a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a>
+            </li>
+            
+            <div class="text-sidebar-muted" id="menu-sistema-title" hidden>Sistema</div>
+            <li id="menu-usuarios" hidden>
+                <a href="/usuarios/" class="nav-link sidebar-item"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a>
+            </li>
+            {% include "componentes/enlace_sms.html" only %}
+            <li id="menu-config" hidden>
+                <a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a>
+            </li>
+        </ul>
+        
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <span id="dashboard-avatar" class="ss-dash-avatar rounded-circle me-2" aria-hidden="true">U</span>
+                <div style="line-height: 1.2;">
+                    <strong class="d-block" style="font-size: 0.85rem; color: #1e293b;" id="user-name">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 d-flex flex-column ss-main" style="background-color: #f8fafc;">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3 ss-dashboard-topbar">
+            <div class="container-fluid p-0">
+                <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+                <form id="dashboardSearchForm" class="d-flex w-50" role="search" action="/productos/" method="get">
+                    <div class="input-group">
+                        <button type="submit" class="btn ss-dash-search-button" aria-label="Buscar en el catálogo"><i class="fa-solid fa-search" aria-hidden="true"></i></button>
+                        <input type="search" name="q" id="dashBuscador" aria-label="Buscar por SKU, nombre o código de barras" class="form-control bg-transparent border-0 shadow-none" placeholder="Buscar SKU, producto o código..." maxlength="200">
+                    </div>
+                </form>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle d-inline-flex align-items-center gap-2" aria-pressed="false" aria-label="Activar modo oscuro" title="Activar modo oscuro">
+                        <i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline">Oscuro</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" id="btn-logout" type="button">Cerrar sesión</button>
+                </div>
+            </div>
+        </nav>
+        <main class="container-fluid p-4 ss-dashboard">
+            <div class="ss-dash-heading">
+                <div>
+                    <h4 class="fw-bold mb-1">Resumen de inventario</h4>
+                    <p class="text-muted small mb-0">Consulta el stock y los movimientos de tu bodega.</p>
+                </div>
+                <a href="/movimientos/" id="dashboardRegistrar" class="btn btn-primary" hidden><i class="fa-solid fa-plus me-2" aria-hidden="true"></i>Registrar movimiento</a>
+            </div>
+            <div class="ss-dash-toolbar">
+                <div class="ss-dash-warehouse">
+                    <label for="dashboardBodega">Bodega</label>
+                    <select id="dashboardBodega" class="form-select" disabled><option value="">Cargando bodegas...</option></select>
+                </div>
+                <div class="ss-dash-update">
+                    <p id="dashboardActualizado" class="text-muted small mb-0" role="status">Cargando resumen...</p>
+                    <button type="button" id="dashboardActualizar" class="btn btn-outline-secondary"><i class="fa-solid fa-rotate-right me-2" aria-hidden="true"></i>Actualizar</button>
+                </div>
+            </div>
+            <div id="dashboardError" class="alert alert-danger" role="alert" hidden></div>
+            <p id="dashboardScope" class="text-muted small">Stock de productos activos. Fechas y horas en America/Santiago.</p>
+            <div id="dashboardContenido" aria-busy="true">
+                <section class="ss-dash-kpis" aria-label="Indicadores de inventario">
+                    <div class="card ss-dash-kpi">
+                        <span class="kpi-title">Stock en bodega</span><strong class="kpi-value" id="kpi-stock">—</strong><span class="ss-dash-kpi-note">Unidades · productos activos</span>
+                    </div>
+                    <div class="card ss-dash-kpi">
+                        <span class="kpi-title">Entradas hoy</span><strong class="kpi-value text-primary" id="kpi-entradas">—</strong><span class="ss-dash-kpi-note">Unidades registradas</span>
+                    </div>
+                    <div class="card ss-dash-kpi">
+                        <span class="kpi-title">Salidas hoy</span><strong class="kpi-value" id="kpi-salidas">—</strong><span class="ss-dash-kpi-note">Unidades registradas</span>
+                    </div>
+                    <div class="card ss-dash-kpi" id="dashboardKpiAlertas">
+                        <span class="kpi-title">Productos agotados</span><strong class="kpi-value" id="kpi-alertas">—</strong><span class="ss-dash-kpi-note" id="dashboardAlertaNota">Consultando stock...</span>
+                    </div>
+                </section>
+                <div class="ss-dash-grid">
+                    <section class="card ss-dash-volume" aria-labelledby="dashboardTituloVolumen">
+                        <div class="card-header ss-dash-section-header">
+                            <span id="dashboardTituloVolumen">Unidades de entrada y salida</span>
+                            <select id="dashboardDias" class="form-select" aria-label="Período del gráfico"><option value="7">Últimos 7 días</option><option value="30">Últimos 30 días</option></select>
+                        </div>
+                        <div class="card-body">
+                            <p id="dashboardPeriodo" class="text-muted small">Cargando período...</p>
+                            <div class="ss-dash-chart">
+                                <p id="dashboardSinMovimientos" class="ss-dash-empty" hidden>No hubo movimientos en este período.</p>
+                                <canvas id="lineChart" role="img" aria-label="Unidades diarias de entrada y salida"></canvas>
+                            </div>
+                            <p id="dashboardChartError" class="text-muted small" hidden>El gráfico no está disponible. Puedes consultar los valores en «Ver datos del gráfico».</p>
+                            <details class="ss-dash-chart-data"><summary>Ver datos del gráfico</summary><div class="table-responsive"><table class="table table-sm"><caption class="visually-hidden">Unidades registradas por día</caption><thead><tr><th>Fecha</th><th>Entradas</th><th>Salidas</th></tr></thead><tbody id="dashboardDatosGrafico"></tbody></table></div></details>
+                        </div>
+                    </section>
+                    <section class="card ss-dash-state" aria-labelledby="dashboardTituloEstado">
+                        <div class="card-header" id="dashboardTituloEstado">Estado del inventario</div>
+                        <div class="card-body">
+                            <div class="ss-dash-state-chart">
+                                <canvas id="doughnutChart" role="img" aria-label="Cantidad de productos por estado de stock"></canvas>
+                                <div id="dashboardCentroEstado" class="ss-dash-chart-center"><strong id="dashboardTotalProductos">—</strong><span>productos</span></div>
+                                <p id="dashboardSinProductos" class="ss-dash-empty" hidden>No hay productos activos para evaluar.</p>
+                            </div>
+                            <ul class="ss-dash-state-legend" aria-label="Productos por estado">
+                                <li><span class="ss-dash-dot ss-dash-dot-ok" aria-hidden="true"></span>Stock suficiente<strong id="dashboardSuficiente">—</strong></li>
+                                <li><span class="ss-dash-dot ss-dash-dot-low" aria-hidden="true"></span>Stock bajo<strong id="dashboardBajo">—</strong></li>
+                                <li><span class="ss-dash-dot ss-dash-dot-out" aria-hidden="true"></span>Agotados<strong id="dashboardAgotado">—</strong></li>
+                            </ul>
+                            <p class="text-muted small mb-0 ss-dash-state-help">Un producto por categoría en la bodega seleccionada. Stock bajo: entre 1 unidad y el mínimo configurado. Sin registro de stock: 0 unidades.</p>
+                        </div>
+                    </section>
+                    <section class="card ss-dash-recent" aria-labelledby="dashboardTituloRecientes">
+                        <div class="card-header ss-dash-section-header"><span id="dashboardTituloRecientes">Movimientos recientes</span><a href="/movimientos/" class="ss-dash-text-link">Ver todos →</a></div>
+                        <div class="table-responsive ss-dash-recent-wrap">
+                            <table class="table table-custom mb-0 ss-dash-recent-table" aria-label="Últimos cinco movimientos de la bodega seleccionada">
+                                <thead><tr><th>Fecha / hora</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Operador</th></tr></thead>
+                                <tbody id="tabla-recientes"><tr><td colspan="5" class="ss-dash-empty">Cargando movimientos...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section class="card ss-dash-alerts" aria-labelledby="dashboardTituloAlertas">
+                        <div class="card-header ss-dash-section-header"><span id="dashboardTituloAlertas">Alertas de stock</span><button type="button" id="dashboardVerAlertas" class="ss-dash-text-link" disabled>Ver todas →</button></div>
+                        <p id="dashboardResumenAlertas" class="text-muted small ss-dash-alert-summary">Cargando alertas...</p>
+                        <ul class="ss-dash-alert-list ss-dash-alert-preview" id="lista-alertas"></ul>
+                    </section>
+                </div>
+            </div>
+            <p class="text-muted small mt-3 mb-0">El stock considera productos activos. Las entradas, salidas y movimientos recientes conservan el historial de la bodega.</p>
+        </main>
+    </div>
+</div>
+<div class="modal fade" id="modalDashboardAlertas" tabindex="-1" aria-labelledby="dashboardAlertasTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="dashboardAlertasTitulo">Productos que requieren atención</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body">
+            <p id="dashboardAlertasBodega" class="text-muted small"></p>
+            <div class="ss-dash-alert-filters">
+                <div><label for="dashboardBuscarAlerta">Buscar producto</label><input id="dashboardBuscarAlerta" type="search" class="form-control" placeholder="Nombre o SKU" maxlength="200"></div>
+                <div><label for="dashboardEstadoAlerta">Estado</label><select id="dashboardEstadoAlerta" class="form-select"><option value="">Todos</option><option value="agotado">Agotados</option><option value="bajo">Stock bajo</option></select></div>
+            </div>
+            <div id="dashboardErrorAlertas" class="alert alert-danger" role="alert" hidden></div>
+            <button id="dashboardReintentarAlertas" type="button" class="btn btn-outline-secondary mb-3" hidden>Reintentar</button>
+            <ul class="ss-dash-alert-list" id="dashboardListaAlertas" aria-busy="false"></ul>
+            <p id="dashboardContadorAlertas" class="text-muted small" role="status"></p>
+            <nav id="dashboardPaginasAlertas" class="ss-dash-pager" aria-label="Páginas de alertas"></nav>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button></div>
+    </div></div>
+</div>
+<div class="modal fade" id="modalDashboardDetalle" tabindex="-1" aria-labelledby="dashboardDetalleTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="dashboardDetalleTitulo">Detalle del movimiento</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body"><p id="dashboardDetalleEstado" role="status">Cargando movimiento...</p><dl id="dashboardDetalleDatos" class="ss-dash-detail"></dl></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><a href="/movimientos/" class="btn btn-primary">Ir a Movimientos</a></div>
+    </div></div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static 'js/dashboard.js' %}?v=sesion-1" defer></script>
+{% endblock %}

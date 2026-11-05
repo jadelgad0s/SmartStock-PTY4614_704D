@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Bodegas - SmartStock{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/bodegas.css' %}?v=3">{% endblock %}
+
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR CORPORATIVA -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% block enlace_inicio_bodega %}{% include "componentes/enlace_inicio_bodega.html" only %}{% endblock %}
+            <li class="nav-item">
+                <a href="/dashboard/" class="nav-link sidebar-item"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/productos/" class="nav-link sidebar-item"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a>
+            </li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item{% block bodegas_enlace_activo %} active{% endblock %}"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" only %}
+
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li>
+                <a href="/movimientos/" class="nav-link sidebar-item"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a>
+            </li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li>
+                <a href="/mermas/" class="nav-link sidebar-item"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a>
+            </li>
+            <li id="menu-auditoria" hidden>
+                <a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a>
+            </li>
+
+            <div class="text-sidebar-muted" id="menu-sistema-title" hidden>Sistema</div>
+            <li id="menu-usuarios" hidden>
+                <a href="/usuarios/" class="nav-link sidebar-item"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a>
+            </li>
+            {% block enlace_sms %}{% include "componentes/enlace_sms.html" only %}{% endblock %}
+            <li id="menu-config" hidden>
+                <a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a>
+            </li>
+        </ul>
+
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0f766e&color=fff" class="rounded-circle me-2" width="32" height="32">
+                <div style="line-height: 1.2;">
+                    <strong class="d-block text-truncate" style="font-size: 0.85rem; color: #1e293b; max-width: 130px;" id="user-name-sidebar">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role-sidebar">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 d-flex flex-column ss-main" style="background-color: #f8fafc;">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3 ss-catalog-topbar">
+            <div class="container-fluid p-0">
+                <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+                <h5 class="mb-0 fw-bold">Gestión de inventario</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle d-inline-flex align-items-center gap-2" aria-pressed="false" aria-label="Activar modo oscuro" title="Activar modo oscuro"><i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline">Oscuro</span></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-logout-bodegas">Cerrar sesión</button>
+                </div>
+            </div>
+        </nav>
+        <main class="container-fluid p-4 ss-bodegas">
+            {% block bodega_contenido %}
+            <div class="ss-bodegas-heading"><div><h4 class="fw-bold mb-1">Bodegas</h4><p class="text-muted small mb-0">Administra los lugares donde guardas tus productos y consulta sus existencias.</p></div><button id="nuevaEntidad" class="btn btn-primary" type="button" hidden><i class="fa-solid fa-plus me-2" aria-hidden="true"></i>Nueva bodega</button></div>
+            <div id="avisoBodegas" class="alert alert-danger" role="alert" hidden></div>
+            <button id="reintentarBodegas" class="btn btn-outline-secondary mb-3" type="button" hidden>Reintentar carga</button>
+                <form id="filtrosBodegas" class="ss-bodegas-filters" aria-label="Filtrar bodegas">
+                    <div><label for="buscarBodegas">Buscar bodega</label><input id="buscarBodegas" type="search" class="form-control" maxlength="200" placeholder="Nombre o dirección"></div>
+                    <div><label for="estadoBodegas">Estado</label><select id="estadoBodegas" class="form-select"><option value="">Todas</option><option value="true">Activas</option><option value="false">Inactivas</option></select></div>
+                    <button id="limpiarBodegas" type="button" class="btn btn-outline-secondary">Limpiar filtros</button>
+                </form>
+                <p id="totalBodegas" class="small text-muted" role="status" aria-live="polite" tabindex="-1">Cargando...</p>
+                <div class="card ss-bodegas-card"><div class="table-responsive"><table class="table table-custom mb-0" aria-label="Bodegas"><thead id="encabezadoBodegas"></thead><tbody id="listaBodegas" aria-busy="true"></tbody></table></div><div class="ss-bodegas-footer"><span id="resumenBodegas" class="small text-muted" role="status"></span><nav id="paginacionBodegas" aria-label="Páginas de bodegas"></nav></div></div>
+            {% endblock %}
+        </main>
+    </div>
+</div>
+{% block bodega_modales %}
+<div id="modalEntidad" class="modal fade ss-warehouse-modal" tabindex="-1" aria-labelledby="tituloEntidad" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloEntidad" class="modal-title">Nueva bodega</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formEntidad" novalidate><div class="modal-body">
+        <p id="estadoEntidad" class="small text-muted" role="status" hidden></p><div id="errorEntidad" class="alert alert-danger" role="alert" hidden></div>
+        <button id="reintentarEntidad" class="btn btn-outline-secondary mb-3" type="button" hidden>Reintentar detalle</button>
+        <div class="mb-3"><label for="entidadNombre">Nombre</label><input id="entidadNombre" class="form-control" maxlength="100" required aria-describedby="entidadNombreError"><div id="entidadNombreError" class="invalid-feedback"></div></div>
+        <div><label for="entidadDireccion">Dirección (opcional)</label><input id="entidadDireccion" class="form-control" maxlength="200" aria-describedby="entidadDireccionError"><div id="entidadDireccionError" class="invalid-feedback"></div></div>
+    </div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancelar</button><button id="guardarEntidad" class="btn btn-primary" type="submit">Guardar</button></div></form>
+</div></div></div>
+<div id="modalEstadoEntidad" class="modal fade ss-warehouse-modal" tabindex="-1" aria-labelledby="tituloEstadoEntidad" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloEstadoEntidad" class="modal-title">Confirmar cambio</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formEstadoEntidad"><div class="modal-body"><p id="estadoAccionEntidad" role="status"></p><strong id="nombreAccionEntidad"></strong><p id="descripcionAccionEntidad" class="small mt-2"></p><div id="errorEstadoEntidad" class="alert alert-danger" role="alert" hidden></div></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancelar</button><button id="confirmarEstadoEntidad" class="btn btn-primary" type="submit" disabled>Confirmar</button></div></form>
+</div></div></div>
+{% endblock %}
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'js/bodegas.js' %}?v=sesion-1"></script>{% endblock %}

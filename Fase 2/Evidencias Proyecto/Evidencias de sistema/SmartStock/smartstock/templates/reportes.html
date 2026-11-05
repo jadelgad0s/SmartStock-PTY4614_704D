@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Reportes de inventario - SmartStock{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/reportes.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR CORPORATIVA -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% include "componentes/enlace_inicio_bodega.html" only %}
+            <li class="nav-item">
+                <a href="/dashboard/" class="nav-link sidebar-item"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/productos/" class="nav-link sidebar-item"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a>
+            </li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" with activo=True only %}
+
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li>
+                <a href="/movimientos/" class="nav-link sidebar-item"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a>
+            </li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li>
+                <a href="/mermas/" class="nav-link sidebar-item"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a>
+            </li>
+            <li id="menu-auditoria" hidden>
+                <a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a>
+            </li>
+
+            <div class="text-sidebar-muted" id="menu-sistema-title" hidden>Sistema</div>
+            <li id="menu-usuarios" hidden>
+                <a href="/usuarios/" class="nav-link sidebar-item"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a>
+            </li>
+            {% include "componentes/enlace_sms.html" only %}
+            <li id="menu-config" hidden>
+                <a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a>
+            </li>
+        </ul>
+
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0f766e&color=fff" class="rounded-circle me-2" width="32" height="32">
+                <div style="line-height: 1.2;">
+                    <strong class="d-block text-truncate" style="font-size: 0.85rem; color: #1e293b; max-width: 130px;" id="user-name-sidebar">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role-sidebar">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow-1 d-flex flex-column ss-main">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3"><div class="container-fluid p-0">
+            <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+            <h5 class="mb-0 fw-bold">Información de inventario</h5>
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle" aria-pressed="false" aria-label="Activar modo oscuro"><i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline ms-2">Oscuro</span></button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-logout-reportes">Cerrar sesión</button>
+            </div>
+        </div></nav>
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 gap-3">
+                <div><h4 class="fw-bold mb-1">Reportes de inventario</h4><p class="text-muted small mb-0">Consulta existencias, revisa bajas y sigue el saldo de cada producto.</p></div>
+                <div class="ss-report-actions"><button type="button" class="btn btn-outline-secondary" id="exportarReporte" hidden disabled><i class="fa-solid fa-file-csv me-2" aria-hidden="true"></i>Exportar CSV</button><button type="button" class="btn btn-outline-secondary" id="imprimirReporte" hidden disabled><i class="fa-solid fa-print me-2" aria-hidden="true"></i>Imprimir / PDF</button></div>
+            </div>
+            <p id="estadoExportarReporte" class="small text-muted" role="status"></p>
+            <div id="errorReportes" class="alert alert-danger" role="alert" hidden></div>
+            <button type="button" class="btn btn-outline-secondary mb-3" id="reintentarReportes" hidden>Reintentar carga</button>
+            <form id="filtrosReportes" class="ss-report-filters" aria-label="Filtros del reporte" hidden>
+                <div><label for="informeReporte" class="form-label">Reporte</label><select id="informeReporte" class="form-select"><option value="existencias">Existencias actuales</option><option value="critico">Stock crítico actual</option><option value="movimientos">Movimientos</option><option value="mermas">Mermas y bajas</option><option value="kardex">Kardex por producto</option></select></div>
+                <div><label for="bodegaReporte" class="form-label">Bodega</label><select id="bodegaReporte" class="form-select" disabled><option value="">Cargando bodegas…</option></select></div>
+                <div id="grupoBuscarReporte"><label for="buscarReporte" class="form-label">Buscar producto</label><input type="search" id="buscarReporte" class="form-control" placeholder="Nombre o SKU" maxlength="200"></div>
+                <div id="grupoEstadoProducto"><label for="estadoProductoReporte" class="form-label">Estado de los productos</label><select id="estadoProductoReporte" class="form-select"><option value="activos">Activos</option><option value="todos">Todos</option><option value="inactivos">Inactivos</option></select></div>
+                <div id="grupoTipoReporte" hidden><label for="tipoReporte" class="form-label">Tipo de movimiento</label><select id="tipoReporte" class="form-select"><option value="">Todos</option><option value="ENTRADA">Entradas</option><option value="SALIDA">Salidas</option></select></div>
+                <div><label for="desdeReporte" class="form-label">Desde</label><input type="date" id="desdeReporte" class="form-control" disabled aria-describedby="ayudaFechasReporte"></div>
+                <div><label for="hastaReporte" class="form-label">Hasta</label><input type="date" id="hastaReporte" class="form-control" disabled aria-describedby="ayudaFechasReporte"></div>
+                <div class="ss-report-product" id="grupoProductoKardex" hidden>
+                    <div class="ss-report-product-fields">
+                        <div><label for="buscarProductoReporte" class="form-label">Buscar producto para el Kardex</label><input type="search" id="buscarProductoReporte" class="form-control" maxlength="200" placeholder="Nombre o SKU"></div>
+                        <div><label for="productoReporte" class="form-label">Producto</label><select id="productoReporte" class="form-select" disabled><option value="">Selecciona un producto</option></select></div>
+                    </div>
+                    <div class="ss-report-product-pages"><button type="button" class="btn btn-sm btn-outline-secondary" id="productosReporteAnterior" disabled>Anterior</button><span id="estadoProductosReporte" class="small" role="status"></span><button type="button" class="btn btn-sm btn-outline-secondary" id="productosReporteSiguiente" disabled>Siguiente</button></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="reintentarProductosReporte" hidden>Reintentar productos</button>
+                </div>
+                <div class="d-flex align-items-end gap-2"><button type="submit" class="btn btn-primary">Actualizar reporte</button><button type="button" class="btn btn-outline-secondary" id="limpiarReporte">Limpiar filtros</button></div>
+                <p id="ayudaFechasReporte" class="small text-muted mb-0 ss-report-product">Las existencias y el stock crítico muestran el estado actual.</p>
+            </form>
+            <dl id="resumenReporte" class="ss-report-summary" aria-label="Resumen del reporte"></dl>
+            <div id="metadatosReporte" class="ss-report-meta"></div>
+            <div id="notasReporte" class="ss-report-notes"></div>
+            <div class="card mt-3"><div class="card-header" id="tituloResultadoReporte">Selecciona un reporte</div>
+                <div class="table-responsive"><table class="table table-custom ss-report-table"><caption class="visually-hidden" id="descripcionTablaReporte">Resultados del reporte seleccionado</caption><thead id="cabeceraReporte"></thead><tbody id="filasReporte" aria-busy="false"></tbody></table></div>
+                <div class="ss-report-footer"><span id="conteoReporte" class="small text-muted" tabindex="-1" role="status"></span><nav id="paginasReporte" class="ss-report-pagination" aria-label="Páginas del reporte"></nav></div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'js/reportes.js' %}?v=sesion-1" defer></script>{% endblock %}

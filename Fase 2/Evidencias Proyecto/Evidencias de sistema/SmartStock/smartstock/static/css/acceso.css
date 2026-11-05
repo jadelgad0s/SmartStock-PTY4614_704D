@@ -1,0 +1,53 @@
+/* Presentación común del inicio de sesión y la recuperación de contraseña. */
+.ss-auth-layout { min-height:100vh; min-height:100svh; display:grid; background:#fff; color:#1e293b; }
+.ss-auth-layout [hidden] { display:none!important; }
+.ss-auth-brand-panel { display:none; }
+.ss-auth-brand { display:inline-flex; align-items:center; gap:.8rem; color:inherit; text-decoration:none; font-size:1.65rem; font-weight:750; letter-spacing:-.035em; }
+.ss-auth-brand:hover { color:inherit; }
+.ss-auth-brand .ss-auth-brand-icon { display:inline-flex; align-items:center; justify-content:center; flex:0 0 48px; width:48px; height:48px; padding:8px; border-radius:12px; background:#f0fdfa; box-shadow:none; }
+.ss-auth-brand .ss-brand-logo { width:32px; height:32px; object-fit:contain; }
+.ss-auth-form-panel { min-width:0; display:flex; justify-content:center; align-items:flex-start; padding:clamp(1.5rem,7svh,3.5rem) 1.25rem 2.5rem; }
+.ss-auth-form-panel .ss-auth-form { width:100%; max-width:420px; transform:none; }
+.ss-auth-mobile-brand { margin-bottom:2.25rem; }
+.ss-auth-form h1 { font-size:clamp(1.5rem,2vw,1.85rem); font-weight:750; line-height:1.2; letter-spacing:-.025em; margin:0 0 .65rem; }
+.ss-auth-intro { color:#475569; line-height:1.65; margin-bottom:1.75rem; }
+.ss-auth-field { margin-bottom:1.35rem; }
+.ss-auth-form .form-label { font-size:.9rem; font-weight:550; margin-bottom:.5rem; }
+.ss-auth-form .form-control { min-height:48px; padding:.7rem .9rem; font-size:16px; color:#1e293b; background:#f8fafc; border:1px solid #cbd5e1; border-radius:.5rem; scroll-margin-block:1.5rem; }
+.ss-auth-form .form-control::placeholder { color:#64748b; opacity:1; }
+.ss-auth-form .form-control:focus { background:#fff; border-color:#0f766e; box-shadow:0 0 0 3px rgba(15,118,110,.16); }
+.ss-auth-form .form-control.is-invalid { border-color:#b42318; background-image:none; }
+.ss-auth-form .btn { min-height:48px; padding:.7rem 1rem; font-size:1rem; border-radius:.5rem; }
+.ss-auth-form .btn-primary { width:100%; font-weight:600; }
+.ss-auth-form .btn-primary:disabled { opacity:.75; }
+.ss-auth-form a:focus-visible,.ss-auth-form summary:focus-visible,.ss-auth-brand:focus-visible { outline:2px solid #0f766e; outline-offset:4px; border-radius:3px; }
+.ss-auth-form a { overflow-wrap:anywhere; }
+.ss-auth-password-label { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:.25rem .75rem; }
+.ss-auth-password-label a { font-size:.85rem; margin-bottom:.5rem; }
+.ss-auth-error { margin-bottom:1.25rem; font-size:.9rem; overflow-wrap:anywhere; }
+.ss-auth-field-error { color:#b42318; font-size:.85rem; margin-top:.45rem; }
+.ss-auth-field-error p { margin-bottom:.25rem; }
+.ss-auth-back { display:inline-flex; align-items:center; gap:.5rem; margin-top:1.5rem; min-height:44px; color:#0f766e; font-size:.9rem; text-decoration:none; }
+.ss-auth-secondary { display:block; margin-top:1rem; color:#0f766e; text-align:center; font-size:.9rem; padding:.5rem; }
+.ss-auth-state-icon { width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:#f0fdfa; color:#0f766e; border-radius:14px; font-size:1.4rem; margin-bottom:1.5rem; }
+.ss-auth-note { color:#475569; font-size:.9rem; line-height:1.65; margin-bottom:1.5rem; }
+.ss-auth-password-help { color:#475569; font-size:.85rem; margin:0 0 1.5rem; }
+.ss-auth-password-help summary { cursor:pointer; color:#0f766e; padding:.25rem 0; }
+.ss-auth-password-help ul { padding-left:1.2rem; margin:.65rem 0 0; line-height:1.6; }
+.ss-auth-form [aria-busy=true] .form-control { color:#475569; }
+@media(min-width:992px) {
+  .ss-auth-layout { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  .ss-auth-brand-panel { display:flex; flex-direction:column; justify-content:space-between; padding:clamp(2rem,4vw,3.5rem); color:#fff; background:linear-gradient(135deg,#0f766e,#095c57); }
+  .ss-auth-brand-panel .ss-auth-brand-icon { background:rgba(255,255,255,.97); }
+  .ss-auth-brand-copy { padding:3rem 0; }
+  .ss-auth-eyebrow { color:#ccfbf1; font-size:.85rem; margin-bottom:1.1rem; }
+  .ss-auth-brand-title { font-size:clamp(2.2rem,3.1vw,3.5rem); line-height:1.12; letter-spacing:-.035em; font-weight:750; margin-bottom:1.5rem; }
+  .ss-auth-brand-description { color:#d3eee8; max-width:540px; font-size:1.1rem; line-height:1.7; }
+  .ss-auth-brand-footer { color:#d3eee8; font-size:.8rem; margin:0; }
+  .ss-auth-form-panel { align-items:center; padding:3rem; }
+}
+@media(max-width:359.98px) {
+  .ss-auth-form-panel { padding-inline:1rem; }
+  .ss-auth-password-label { display:block; }
+  .ss-auth-password-label a { display:inline-block; }
+}

@@ -1,0 +1,20 @@
+
+# Django y PostgreSQL
+Django>=5.2,<5.3
+psycopg[binary]>=3.2,<4
+
+# API REST
+djangorestframework>=3.16,<3.17
+djangorestframework-simplejwt>=5.3.1,<6
+django-cors-headers>=4.6,<5
+django-filter>=24.3
+
+# Utilidades
+python-decouple==3.8
+Pillow>=11,<13
+twilio>=9,<10
+
+# Producción
+gunicorn>=23,<26
+whitenoise>=6.9,<7
+dj-database-url>=2.3,<4

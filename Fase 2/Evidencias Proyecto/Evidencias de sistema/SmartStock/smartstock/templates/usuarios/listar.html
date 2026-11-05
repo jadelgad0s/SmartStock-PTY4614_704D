@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Gestión de Usuarios - SmartStock{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/usuarios.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/password_visibility.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR CORPORATIVA -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+        
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% include "componentes/enlace_inicio_bodega.html" only %}
+            <li class="nav-item">
+                <a href="/dashboard/" class="nav-link sidebar-item"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/productos/" class="nav-link sidebar-item"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a>
+            </li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" only %}
+            
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li>
+                <a href="/movimientos/" class="nav-link sidebar-item"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a>
+            </li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li>
+                <a href="/mermas/" class="nav-link sidebar-item"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a>
+            </li>
+            <li id="menu-auditoria">
+                <a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a>
+            </li>
+            
+            <div class="text-sidebar-muted" id="menu-sistema-title">Sistema</div>
+            <li id="menu-usuarios">
+                <a href="/usuarios/" class="nav-link sidebar-item active"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a>
+            </li>
+            {% include "componentes/enlace_sms.html" only %}
+            <li id="menu-config">
+                <a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a>
+            </li>
+        </ul>
+        
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0f766e&color=fff" class="rounded-circle me-2" width="32" height="32">
+                <div style="line-height: 1.2;">
+                    <strong class="d-block text-truncate" style="font-size: 0.85rem; color: #1e293b; max-width: 130px;" id="user-name-sidebar">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role-sidebar">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 d-flex flex-column ss-main" style="background-color: #f8fafc;">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3">
+            <div class="container-fluid p-0">
+                <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+                <div class="d-flex w-50 align-items-center">
+                    <h5 class="mb-0 fw-bold" style="color: #0f172a;">Administración del sistema</h5>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle d-inline-flex align-items-center gap-2" aria-pressed="false" aria-label="Activar modo oscuro" title="Activar modo oscuro">
+                        <i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline">Oscuro</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary fw-medium" id="btn-logout-usuarios">Cerrar sesión</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid p-4 max-w-7xl">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1" style="color: #0f172a;">Gestión de usuarios</h4>
+                    <p class="text-muted small mb-0">Administra las cuentas, sus roles y el acceso a SmartStock.</p>
+                </div>
+                <button type="button" class="btn btn-primary fw-medium" data-bs-toggle="modal" data-bs-target="#modalNuevoUsuario">
+                    <i class="fa-solid fa-plus me-2" aria-hidden="true"></i>Añadir usuario
+                </button>
+            </div>
+            <form id="filtrosUsuarios" class="ss-users-filters mb-3" aria-label="Filtrar usuarios">
+                <div class="ss-users-search">
+                    <label for="buscarUsuarios" class="form-label">Buscar usuario</label>
+                    <input type="search" id="buscarUsuarios" class="form-control" placeholder="Nombre o correo" maxlength="200" autocomplete="off">
+                </div>
+                <button type="button" id="mostrarFiltrosUsuarios" class="btn btn-outline-secondary ss-users-toggle" aria-expanded="false" aria-controls="controlesFiltrosUsuarios">Filtros</button>
+                <div id="controlesFiltrosUsuarios" class="ss-users-filter-fields">
+                    <div><label for="rolUsuarios" class="form-label">Rol</label><select id="rolUsuarios" class="form-select" disabled><option value="">Todos</option></select></div>
+                    <div><label for="estadoUsuarios" class="form-label">Estado</label><select id="estadoUsuarios" class="form-select"><option value="">Todos</option><option value="true">Activos</option><option value="false">Inactivos</option></select></div>
+                    <div><label for="ordenUsuarios" class="form-label">Ordenar por</label><select id="ordenUsuarios" class="form-select"><option value="nombres,apellidos,id">Nombre A–Z</option><option value="-nombres,-apellidos,-id">Nombre Z–A</option></select></div>
+                    <button type="button" id="limpiarFiltrosUsuarios" class="btn btn-outline-secondary">Limpiar filtros</button>
+                </div>
+            </form>
+            <div id="errorOpcionesUsuarios" class="alert alert-warning d-none" role="alert"></div>
+            <button type="button" id="reintentarOpcionesUsuarios" class="btn btn-outline-secondary mb-3 d-none">Reintentar carga de roles</button>
+            <div id="usuarios-api-aviso" class="alert alert-danger d-none" role="alert"></div>
+            <div class="card border-0 shadow-sm ss-users-card">
+                <div class="card-header">Usuarios registrados</div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0" id="tablaUsuarios">
+                            <thead><tr>
+                                <th style="width: 30%;">Usuario</th><th style="width: 16%;">Rol</th>
+                                <th style="width: 12%;">Estado</th><th style="width: 16%;">Último acceso</th>
+                                <th style="width: 26%;">Acciones</th>
+                            </tr></thead>
+                            <tbody id="listaUsuarios" aria-busy="true"><tr><td colspan="5" class="text-center text-muted py-4">Cargando usuarios...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="ss-users-footer">
+                    <p id="resumenUsuarios" class="text-muted small mb-0" role="status" aria-live="polite" tabindex="-1"></p>
+                    <nav id="paginacionUsuarios" aria-label="Páginas del listado de usuarios"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevoUsuario" tabindex="-1" aria-labelledby="tituloNuevoUsuario" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 id="tituloNuevoUsuario" class="modal-title h6 fw-bold">Añadir usuario</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <form id="formCrearUsuario" class="ss-users-form" novalidate>
+                <div class="modal-body">
+                    <div id="errorCrearUsuario" class="alert alert-danger d-none" role="alert"></div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6"><label for="inputNombres" class="form-label">Nombres</label><input type="text" id="inputNombres" class="form-control" maxlength="100" autocomplete="given-name" required aria-describedby="inputNombresError"><div id="inputNombresError" class="invalid-feedback"></div></div>
+                        <div class="col-12 col-sm-6"><label for="inputApellidos" class="form-label">Apellidos</label><input type="text" id="inputApellidos" class="form-control" maxlength="100" autocomplete="family-name" required aria-describedby="inputApellidosError"><div id="inputApellidosError" class="invalid-feedback"></div></div>
+                    </div>
+                    <div class="mb-3"><label for="inputEmail" class="form-label">Correo electrónico</label><input type="email" id="inputEmail" class="form-control" maxlength="254" autocomplete="email" required aria-describedby="inputEmailError"><div id="inputEmailError" class="invalid-feedback"></div></div>
+                    <div class="mb-3"><label for="inputTelefono" class="form-label">Teléfono <span class="text-muted small">(opcional)</span></label><input type="tel" id="inputTelefono" class="form-control" maxlength="20" autocomplete="tel" placeholder="Ej.: +56 9 1234 5678" aria-describedby="inputTelefonoError"><div id="inputTelefonoError" class="invalid-feedback"></div></div>
+                    <div class="mb-3"><label for="inputRol" class="form-label">Rol</label><select id="inputRol" class="form-select" required aria-describedby="inputRolError inputRolAyuda" disabled><option value="">Cargando roles...</option></select><div id="inputRolError" class="invalid-feedback"></div><p id="inputRolAyuda" class="form-text mb-0"></p></div>
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Contraseña</label>
+                        <div class="ss-password-field"><input type="password" id="inputPassword" class="form-control" autocomplete="new-password" required aria-describedby="inputPasswordError requisitosPasswordUsuarios"><button type="button" class="ss-password-toggle" data-password-toggle="inputPassword" aria-controls="inputPassword" aria-pressed="false" aria-label="Mostrar contraseña" title="Mostrar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div>
+                        <div id="inputPasswordError" class="invalid-feedback"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputPasswordConfirmacion" class="form-label">Confirmar contraseña</label>
+                        <div class="ss-password-field"><input type="password" id="inputPasswordConfirmacion" class="form-control" autocomplete="new-password" required aria-describedby="inputPasswordConfirmacionError"><button type="button" class="ss-password-toggle" data-password-toggle="inputPasswordConfirmacion" aria-controls="inputPasswordConfirmacion" aria-pressed="false" aria-label="Mostrar contraseña" title="Mostrar contraseña"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div>
+                        <div id="inputPasswordConfirmacionError" class="invalid-feedback"></div>
+                    </div>
+                    <ul id="requisitosPasswordUsuarios" class="small text-muted ps-3 mb-0"><li>Consulta los requisitos de contraseña al cargar los roles.</li></ul>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="submit" id="guardarNuevoUsuario" class="btn btn-primary" disabled>Crear usuario</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="tituloEditarUsuario" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 id="tituloEditarUsuario" class="modal-title h6 fw-bold">Editar usuario</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <form id="formEditarUsuario" class="ss-users-form" novalidate>
+                <div class="modal-body">
+                    <p id="estadoEditarUsuario" role="status">Cargando usuario...</p>
+                    <p id="editCorreo" class="small text-muted"></p>
+                    <div id="errorEditarUsuario" class="alert alert-danger d-none" role="alert"></div>
+                    <input type="hidden" id="editUserId">
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6"><label for="editNombres" class="form-label">Nombres</label><input type="text" id="editNombres" class="form-control" maxlength="100" autocomplete="given-name" required aria-describedby="editNombresError"><div id="editNombresError" class="invalid-feedback"></div></div>
+                        <div class="col-12 col-sm-6"><label for="editApellidos" class="form-label">Apellidos</label><input type="text" id="editApellidos" class="form-control" maxlength="100" autocomplete="family-name" required aria-describedby="editApellidosError"><div id="editApellidosError" class="invalid-feedback"></div></div>
+                    </div>
+                    <div class="mb-3"><label for="editTelefono" class="form-label">Teléfono <span class="text-muted small">(opcional)</span></label><input type="tel" id="editTelefono" class="form-control" maxlength="20" autocomplete="tel" aria-describedby="editTelefonoError"><div id="editTelefonoError" class="invalid-feedback"></div></div>
+                    <div class="mb-3"><label for="editRol" class="form-label">Rol</label><select id="editRol" class="form-select" aria-describedby="editRolError editRolAyuda editRolProtegido" disabled><option value="">Cargando roles...</option></select><div id="editRolError" class="invalid-feedback"></div><p id="editRolAyuda" class="form-text mb-0"></p></div>
+                    <p id="editRolProtegido" class="alert alert-info small d-none">Esta cuenta está protegida. Su rol de administración no se puede cambiar desde este formulario.</p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="submit" id="guardarEditarUsuario" class="btn btn-primary" disabled>Guardar cambios</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetalleUsuario" tabindex="-1" aria-labelledby="tituloDetalleUsuario" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 id="tituloDetalleUsuario" class="modal-title h6 fw-bold">Detalle del usuario</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <div class="modal-body">
+                <p id="estadoDetalleUsuario" role="status">Cargando detalle...</p>
+                <dl id="datosDetalleUsuario" class="ss-users-detail d-none">
+                    <dt>Usuario</dt><dd id="detalleUsuarioNombre"></dd><dt>Correo</dt><dd id="detalleUsuarioCorreo"></dd>
+                    <dt>ID</dt><dd id="detalleUsuarioId"></dd><dt>Rol</dt><dd id="detalleUsuarioRol"></dd><dt>Estado</dt><dd id="detalleUsuarioEstado"></dd>
+                    <dt>Teléfono</dt><dd id="detalleUsuarioTelefono"></dd><dt>Fecha de creación</dt><dd id="detalleUsuarioCreacion"></dd>
+                    <dt>Último acceso</dt><dd id="detalleUsuarioUltimoLogin"></dd><dt>Protección</dt><dd id="detalleUsuarioProteccion"></dd>
+                </dl>
+                <p class="small text-muted mb-0">Fechas y horas en America/Santiago.</p>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAccionUsuario" tabindex="-1" aria-labelledby="tituloAccionUsuario" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 id="tituloAccionUsuario" class="modal-title h6 fw-bold">Confirmar acción</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <form id="formAccionUsuario" class="ss-users-form">
+                <div class="modal-body">
+                    <p id="estadoAccionUsuario" role="status">Cargando usuario...</p>
+                    <div id="contenidoAccionUsuario" class="d-none"><p class="fw-bold mb-1" id="nombreAccionUsuario"></p><p id="correoAccionUsuario" class="small text-muted"></p><p id="descripcionAccionUsuario" class="mb-0"></p></div>
+                    <div id="errorAccionUsuario" class="alert alert-danger mt-3 d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button type="submit" id="confirmarAccionUsuario" class="btn btn-primary" disabled>Confirmar</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/password_visibility.js' %}?v=1" defer></script>
+<script src="{% static 'js/usuarios_api.js' %}?v=sesion-1" defer></script>
+{% endblock %}

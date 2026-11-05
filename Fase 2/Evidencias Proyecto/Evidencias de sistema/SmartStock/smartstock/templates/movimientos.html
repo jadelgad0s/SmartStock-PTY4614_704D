@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Movimientos de Bodega - SmartStock{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/movimientos.css' %}?v=2">{% endblock %}
+
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR CORPORATIVA -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+        
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% include "componentes/enlace_inicio_bodega.html" only %}
+            <li class="nav-item">
+                <a href="/dashboard/" class="nav-link sidebar-item"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/productos/" class="nav-link sidebar-item"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a>
+            </li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" only %}
+            
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li>
+                <!-- ACTIVO AQUÍ -->
+                <a href="/movimientos/" class="nav-link sidebar-item active"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a>
+            </li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li id="menu-mermas">
+                <a href="/mermas/" class="nav-link sidebar-item"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a>
+            </li>
+            <li id="menu-auditoria">
+                <a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a>
+            </li>
+            
+            <div class="text-sidebar-muted" id="menu-sistema-title">Sistema</div>
+            <li id="menu-usuarios">
+                <a href="/usuarios/" class="nav-link sidebar-item"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a>
+            </li>
+            {% include "componentes/enlace_sms.html" only %}
+            <li id="menu-config">
+                <a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a>
+            </li>
+        </ul>
+        
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=0f766e&color=fff" class="rounded-circle me-2" width="32" height="32">
+                <div style="line-height: 1.2;">
+                    <strong class="d-block text-truncate" style="font-size: 0.85rem; color: #1e293b; max-width: 130px;" id="user-name-sidebar">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role-sidebar">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 d-flex flex-column ss-main" style="background-color: #f8fafc;">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3">
+            <div class="container-fluid p-0">
+                <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+                <div class="d-flex w-50 align-items-center">
+                    <h5 class="mb-0 fw-bold" style="color: #0f172a;">Operación de Bodega</h5>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle d-inline-flex align-items-center gap-2" aria-pressed="false" aria-label="Activar modo oscuro" title="Activar modo oscuro">
+                        <i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline">Oscuro</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary fw-medium" id="btn-logout-movimientos">Cerrar sesión</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid p-4 max-w-7xl">
+            
+            <section class="ss-warehouse-context mb-3" aria-label="Bodega de la operación">
+                <label for="bodegaMovimiento" class="form-label">Bodega preseleccionada</label>
+                <select id="bodegaMovimiento" class="form-select" aria-describedby="estadoBodegasMovimiento" disabled><option value="">Cargando bodegas...</option></select>
+                <p id="estadoBodegasMovimiento" class="small text-muted mt-2 mb-0" role="status"></p>
+                <button id="reintentarBodegasMovimiento" type="button" class="btn btn-outline-secondary mt-2" hidden>Reintentar bodegas</button>
+            </section>
+            <!-- EL PROTAGONISTA: MODO ESCÁNER -->
+            <div class="card border-0 shadow-sm mb-4 ss-movement-terminal" style="background: linear-gradient(135deg, #0f766e 0%, #064e3b 100%); color: white; border-radius: 0.75rem;">
+                <div class="card-body d-flex justify-content-between align-items-center p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white bg-opacity-25 rounded p-3 me-4 text-center">
+                            <i class="fa-solid fa-barcode" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold">Registrar movimiento</h4>
+                            <p class="mb-0 ss-movement-terminal-help">Escanea o escribe el código del producto.</p>
+                        </div>
+                    </div>
+                    <div class="ss-movement-scan">
+                        <div class="ss-movement-input-group">
+                            <input type="text" id="inputEscaner" class="form-control form-control-lg shadow-none text-center fw-bold text-dark"
+                                   placeholder="Código de barras o SKU" aria-label="SKU o código de barras"
+                                   aria-describedby="ayudaEscaner" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="100">
+                            <button type="button" class="btn ss-movement-camera ss-scan-code"
+                                    data-target="inputEscaner" title="Leer código con la cámara"
+                                    aria-label="Escanear con la cámara">
+                                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="form-text ss-movement-terminal-help mt-1" id="ayudaEscaner">Lector físico, teclado o cámara. Pulsa Enter al escribir.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorEscaner" class="alert alert-danger d-none" role="alert"></div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1" style="color: #0f172a;">Historial de movimientos</h5>
+                    <p class="text-muted small mb-0">Consulta entradas y salidas, del más reciente al más antiguo.</p>
+                </div>
+                <button type="button" class="btn btn-outline-primary fw-medium" id="btn-movimiento-manual">
+                    <i class="fa-solid fa-keyboard me-2" aria-hidden="true"></i>Registro manual
+                </button>
+            </div>
+
+            <form id="filtrosMovimientos" class="ss-mov-filters mb-3" aria-label="Filtrar historial de movimientos">
+                <div class="ss-mov-search">
+                    <label for="buscarMovimientos" class="form-label">Buscar producto</label>
+                    <input type="search" id="buscarMovimientos" class="form-control" placeholder="Nombre o SKU" maxlength="200" autocomplete="off">
+                </div>
+                <button type="button" id="mostrarFiltrosMovimientos" class="btn btn-outline-secondary ss-mov-toggle" aria-expanded="false" aria-controls="controlesFiltrosMovimientos">Filtros</button>
+                <div id="controlesFiltrosMovimientos" class="ss-mov-filter-fields">
+                <div><label for="bodegaHistorialMovimientos" class="form-label">Bodega</label><select id="bodegaHistorialMovimientos" class="form-select"><option value="">Todas</option></select></div>
+                <div class="ss-mov-filter-type">
+                    <label for="tipoMovimientos" class="form-label">Tipo</label>
+                    <select id="tipoMovimientos" class="form-select">
+                        <option value="">Todos</option><option value="ENTRADA">Entradas</option><option value="SALIDA">Salidas</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="desdeMovimientos" class="form-label">Desde</label>
+                    <input type="date" id="desdeMovimientos" class="form-control">
+                </div>
+                <div>
+                    <label for="hastaMovimientos" class="form-label">Hasta</label>
+                    <input type="date" id="hastaMovimientos" class="form-control">
+                </div>
+                <button type="button" id="limpiarFiltrosMovimientos" class="btn btn-outline-secondary">Limpiar filtros</button>
+                </div>
+            </form>
+            <div id="errorHistorialMovimientos" class="alert alert-danger d-none" role="alert"></div>
+
+            <div class="card border-0 shadow-sm ss-mov-card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0" id="tablaMovimientos">
+                            <thead>
+                                <tr>
+                                    <th style="width: 16%;">Fecha / hora</th>
+                                    <th style="width: 11%;">Tipo</th>
+                                    <th style="width: 30%;">Producto</th>
+                                    <th style="width: 10%;" class="text-end">Cantidad</th>
+                                    <th style="width: 20%;">Operador</th>
+                                    <th style="width: 13%;"><span class="visually-hidden">Detalle</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaMovimientos" aria-busy="true">
+                                <tr><td colspan="6" class="text-center text-muted py-4">Cargando movimientos...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="ss-mov-footer">
+                    <p id="resumenMovimientos" class="text-muted small mb-0" role="status" aria-live="polite" tabindex="-1"></p>
+                    <nav id="paginacionMovimientos" aria-label="Páginas del historial"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Ingreso manual de SKU: evita el prompt nativo del navegador en celular. -->
+<div class="modal fade" id="modalIngresoManual" tabindex="-1" aria-labelledby="tituloIngresoManual" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold fs-6" id="tituloIngresoManual">
+                    <i class="fa-solid fa-keyboard text-primary me-2" aria-hidden="true"></i>Registro manual
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formIngresoManual">
+                <div class="modal-body bg-light">
+                    <label for="inputSkuManual" class="form-label fw-semibold">SKU o código de barras</label>
+                    <input type="text" id="inputSkuManual" class="form-control form-control-lg"
+                           placeholder="Ej: 780123456789" autocomplete="off" autocapitalize="off"
+                           spellcheck="false" maxlength="100" required>
+                    <div id="errorSkuManual" class="alert alert-danger mt-3 mb-0 d-none" role="alert"></div>
+                    <p class="small text-muted mt-2 mb-0">Ingresa el código y continúa para elegir el tipo de movimiento, la bodega y la cantidad.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Continuar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ACCIÓN DE MOVIMIENTO (Se abre al pistolear) -->
+<div class="modal fade" id="modalAccionMovimiento" tabindex="-1" aria-labelledby="tituloAccionMovimiento" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-white border-bottom">
+                <h5 class="modal-title h6 fw-bold text-primary" id="tituloAccionMovimiento">
+                    <i class="fa-solid fa-box-open me-2"></i>Registrar Movimiento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formRegistrarMovimiento">
+                <input type="hidden" id="movProductoId">
+                <div class="modal-body bg-light">
+                    
+                    <!-- Ficha del Producto Escaneado -->
+                    <div class="card border-secondary mb-3 bg-white">
+                        <div class="card-body py-2 px-3 d-flex align-items-center">
+                            <i class="fa-solid fa-barcode text-muted fs-3 me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark" id="movNombreProducto">Cargando...</h6>
+                                <small class="text-muted" id="movSkuProducto">SKU: ---</small>
+                                <p class="small mb-0 mt-1" id="movStockDisponible" role="status" aria-live="polite"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="movTipo" class="form-label fw-bold text-muted small text-uppercase">Tipo de movimiento</label>
+                            <select id="movTipo" class="form-select border-secondary fw-bold" required autofocus>
+                                <option value="ENTRADA" class="text-success">Entrada</option>
+                                <option value="SALIDA" class="text-danger">Salida</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="movCantidad" class="form-label fw-bold text-muted small text-uppercase">Cantidad</label>
+                            <input type="number" id="movCantidad" class="form-control border-secondary form-control-lg text-center fw-bold" required min="1" max="2147483647" step="1" inputmode="numeric" value="1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="movBodega" id="movEtiquetaBodega" class="form-label fw-bold text-muted small text-uppercase">Bodega de recepción</label>
+                        <select id="movBodega" class="form-select border-secondary" aria-describedby="movAyudaBodega movStockDisponible" required disabled><option value="">Cargando bodegas...</option></select>
+                        <p id="movAyudaBodega" class="form-text mb-0">Las unidades ingresarán a esta bodega.</p>
+                        <button id="reintentarStockMovimiento" class="btn btn-sm btn-outline-secondary mt-2" type="button" hidden>Reintentar consulta de stock</button>
+                    </div>
+                    <div class="mb-2">
+                        <label for="movObservacion" class="form-label fw-bold text-muted small text-uppercase">Referencia / observación (opcional)</label>
+                        <input type="text" id="movObservacion" class="form-control border-secondary" maxlength="100" placeholder="Ej: Factura #1234 o guía de despacho">
+                    </div>
+                    <p id="movResumenConfirmacion" class="alert alert-info small mt-3 mb-0" role="status" aria-live="polite"></p>
+                    <div id="movErrorRegistro" class="alert alert-danger mt-3 mb-0 d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer border-top-0 bg-white d-flex justify-content-between">
+                    <button type="button" class="btn btn-light fw-medium" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="confirmarMovimiento" class="btn btn-primary px-4 fw-bold shadow-sm">Confirmar entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalDetalleMovimiento" tabindex="-1" aria-labelledby="tituloDetalleMovimiento" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title h6 fw-bold" id="tituloDetalleMovimiento">Detalle del movimiento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="estadoDetalleMovimiento" role="status">Cargando detalle...</p>
+                <dl id="datosDetalleMovimiento" class="ss-mov-detail d-none">
+                    <dt>Movimiento</dt><dd id="detalleMovId"></dd>
+                    <dt>Producto</dt><dd id="detalleMovProducto"></dd>
+                    <dt>SKU</dt><dd id="detalleMovSku"></dd>
+                    <dt>Tipo</dt><dd id="detalleMovTipo"></dd>
+                    <dt>Cantidad</dt><dd id="detalleMovCantidad"></dd>
+                    <dt>Fecha / hora</dt><dd id="detalleMovFecha"></dd>
+                    <dt>Operador</dt><dd id="detalleMovUsuario"></dd>
+                    <dt>Bodega</dt><dd id="detalleMovBodega"></dd>
+                    <dt>Referencia / observación</dt><dd id="detalleMovReferencia"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="ssModalCamara" tabindex="-1" aria-labelledby="ssCamaraTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ssCamaraTitulo">Escanear código con la cámara</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                {% include "componentes/vista_previa_camara.html" only %}
+                <p class="form-text" id="ssCamaraEstado" role="status">Apunta la cámara al código del producto.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+<script src="{% static 'js/movimientos.js' %}?v=confirmacion-1" defer></script>
+<script src="{% static 'js/escaneo_camara.js' %}?v=camara-4" defer></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (window.SmartStockNavegacion && !await window.SmartStockNavegacion.lista) return;
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        const nombreCompleto = usuario.nombre_completo || 'Usuario';
+        
+        document.getElementById('user-name-sidebar').textContent = nombreCompleto;
+        document.getElementById('user-role-sidebar').textContent = usuario.rol_nombre || 'Operador';
+        document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreCompleto)}&background=0f766e&color=fff`;
+        
+    });
+</script>
+{% endblock %}
+

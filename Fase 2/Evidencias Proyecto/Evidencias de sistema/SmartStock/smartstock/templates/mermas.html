@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Control de Mermas - SmartStock{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/mermas.css' %}?v=1">{% endblock %}
+
+{% block content %}
+<div class="d-flex ss-app-layout" style="min-height: 100vh;">
+    <!-- SIDEBAR -->
+    <div id="ss-navigation" role="navigation" aria-label="Menú principal" class="bg-sidebar d-flex flex-column flex-shrink-0 p-3 ss-sidebar" style="width: 250px;">
+        <button type="button" class="ss-sidebar-close" aria-label="Cerrar menú"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <a href="/" data-ss-inicio aria-label="Ir al inicio de SmartStock" class="d-flex align-items-center mb-4 text-decoration-none px-2 mt-2">
+            <div class="bg-primary-soft rounded p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                <img src="{% static 'branding/smartstock-mark.png' %}" alt="Logo SmartStock" class="ss-brand-logo" width="28" height="28">
+            </div>
+            <span class="fs-5 fw-bold" style="color: #0f172a; letter-spacing: -0.02em;">SmartStock</span>
+        </a>
+        
+        <ul class="nav nav-pills flex-column ss-sidebar-links mb-2">
+            <div class="text-sidebar-muted">Visión General</div>
+            {% include "componentes/enlace_inicio_bodega.html" only %}
+            <li class="nav-item"><a href="/dashboard/" class="nav-link sidebar-item"><i class="fa-solid fa-chart-line sidebar-icon"></i> Dashboard</a></li>
+            <li><a href="/productos/" class="nav-link sidebar-item"><i class="fa-solid fa-box sidebar-icon"></i> Catálogo</a></li>
+            <li><a href="/bodegas/" class="nav-link sidebar-item"><i class="fa-solid fa-warehouse sidebar-icon" aria-hidden="true"></i>Bodegas</a></li>
+            {% include "componentes/enlace_reportes.html" only %}
+            
+            <div class="text-sidebar-muted">Operaciones</div>
+            <li><a href="/movimientos/" class="nav-link sidebar-item"><i class="fa-solid fa-box-open sidebar-icon" aria-hidden="true"></i> Movimientos</a></li>
+            <li><a href="/transferencias/" class="nav-link sidebar-item"><i class="fa-solid fa-right-left sidebar-icon" aria-hidden="true"></i>Transferencias</a></li>
+            <li><a href="/mermas/" class="nav-link sidebar-item active"><i class="fa-solid fa-triangle-exclamation sidebar-icon"></i> Mermas y Bajas</a></li>
+            <li id="menu-auditoria"><a href="/auditoria/" class="nav-link sidebar-item"><i class="fa-solid fa-clipboard-list sidebar-icon"></i> Auditoría</a></li>
+            
+            <div class="text-sidebar-muted" id="menu-sistema-title">Sistema</div>
+            <li id="menu-usuarios"><a href="/usuarios/" class="nav-link sidebar-item"><i class="fa-solid fa-users sidebar-icon"></i> Usuarios</a></li>
+            {% include "componentes/enlace_sms.html" only %}
+            <li id="menu-config"><a href="/admin/" class="nav-link sidebar-item"><i class="fa-solid fa-sliders sidebar-icon"></i> Configuración</a></li>
+        </ul>
+        
+        <div class="mt-auto px-2 ss-sidebar-profile">
+            <div class="d-flex align-items-center p-2 rounded ss-profile-card">
+                <img id="user-avatar" src="" class="rounded-circle me-2" width="32" height="32">
+                <div style="line-height: 1.2;">
+                    <strong class="d-block" style="font-size: 0.85rem; color: #1e293b;" id="user-name-sidebar">Cargando...</strong>
+                    <span style="font-size: 0.75rem; color: #64748b;" id="user-role-sidebar">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow-1 d-flex flex-column ss-main" style="background-color: #f8fafc;">
+        <nav class="navbar navbar-expand-lg bg-topbar px-4 py-3">
+            <div class="container-fluid p-0">
+                <button type="button" class="btn btn-link text-dark ss-menu-toggle d-lg-none" aria-label="Abrir menú" aria-controls="ss-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+                <div class="d-flex w-50 align-items-center"><h5 class="mb-0 fw-bold" style="color: #0f172a;">Gestión de Pérdidas y Bajas</h5></div>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ss-theme-toggle d-inline-flex align-items-center gap-2" aria-pressed="false" aria-label="Activar modo oscuro" title="Activar modo oscuro">
+                        <i class="fa-solid fa-moon" aria-hidden="true"></i><span class="ss-theme-label d-none d-xl-inline">Oscuro</span>
+                    </button><button class="btn btn-sm btn-outline-secondary fw-medium" id="btn-logout-mermas">Cerrar sesión</button></div>
+            </div>
+        </nav>
+
+        <div class="container-fluid p-4 max-w-7xl">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1" style="color: #0f172a; letter-spacing: -0.02em;">Mermas y bajas</h4>
+                    <p class="text-muted small mb-0">Registra productos dañados, vencidos o extraviados para ajustar el stock real.</p>
+                </div>
+                <button type="button" id="btnNuevaMerma" class="btn btn-danger fw-medium" data-bs-toggle="modal" data-bs-target="#modalNuevaMerma" disabled>
+                    <i class="fa-solid fa-minus me-2" aria-hidden="true"></i>Registrar merma
+                </button>
+            </div>
+
+            <form id="filtrosMermas" class="ss-loss-filters mb-3" aria-label="Filtrar historial de mermas">
+                <div class="ss-loss-search">
+                    <label for="buscarMermas" class="form-label">Buscar producto</label>
+                    <input type="search" id="buscarMermas" class="form-control" placeholder="Nombre o SKU" maxlength="200" autocomplete="off">
+                </div>
+                <button type="button" id="mostrarFiltrosMermas" class="btn btn-outline-secondary ss-loss-toggle" aria-expanded="false" aria-controls="controlesFiltrosMermas">Filtros</button>
+                <div id="controlesFiltrosMermas" class="ss-loss-filter-fields">
+                    <div><label for="bodegaHistorialMermas" class="form-label">Bodega</label><select id="bodegaHistorialMermas" class="form-select"><option value="">Todas</option></select></div>
+                    <div class="ss-loss-filter-reason">
+                        <label for="motivoMermas" class="form-label">Motivo</label>
+                        <select id="motivoMermas" class="form-select">
+                            <option value="">Todos</option><option value="DAÑO">Daño en bodega</option>
+                            <option value="VENCIDO">Producto vencido</option><option value="EXTRAVIO">Pérdida / extravío</option>
+                            <option value="DEFECTO">Falla de fábrica</option>
+                        </select>
+                    </div>
+                    <div><label for="desdeMermas" class="form-label">Desde</label><input type="date" id="desdeMermas" class="form-control"></div>
+                    <div><label for="hastaMermas" class="form-label">Hasta</label><input type="date" id="hastaMermas" class="form-control"></div>
+                    <button type="button" id="limpiarFiltrosMermas" class="btn btn-outline-secondary">Limpiar filtros</button>
+                </div>
+            </form>
+            <div id="errorHistorialMermas" class="alert alert-danger d-none" role="alert"></div>
+            <p id="estadoBodegasMermas" class="small text-muted" role="status"></p>
+            <button id="reintentarBodegasMermas" type="button" class="btn btn-outline-secondary mb-3" hidden>Reintentar bodegas</button>
+            <div class="card border-0 shadow-sm ss-loss-card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span>Historial de mermas</span>
+                    <span class="small text-muted fw-normal ss-loss-order">Más recientes primero</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0" id="tablaMermas">
+                            <thead>
+                                <tr>
+                                    <th style="width: 14%;">Fecha / hora</th>
+                                    <th style="width: 25%;">Producto</th>
+                                    <th style="width: 10%;" class="text-end">Cantidad</th>
+                                    <th style="width: 23%;">Motivo / observación</th>
+                                    <th style="width: 15%;">Responsable</th>
+                                    <th style="width: 13%;"><span class="visually-hidden">Detalle</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaMermas" aria-busy="true">
+                                <tr><td colspan="6" class="text-center text-muted py-4">Cargando mermas...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="ss-loss-footer">
+                    <p id="resumenMermas" class="text-muted small mb-0" role="status" aria-live="polite" tabindex="-1"></p>
+                    <nav id="paginacionMermas" aria-label="Páginas del historial de mermas"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL NUEVA MERMA -->
+<div class="modal fade" id="modalNuevaMerma" tabindex="-1" aria-labelledby="tituloNuevaMerma" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title h6 fw-bold" id="tituloNuevaMerma" style="color: #0f172a;"><i class="fa-solid fa-triangle-exclamation text-danger me-2" aria-hidden="true"></i>Registrar merma</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formNuevaMerma">
+                <div class="modal-body pt-3">
+                    <div class="mb-3"><label for="mermaBodega" class="form-label">Bodega de la merma</label><select id="mermaBodega" class="form-select" required disabled><option value="">Cargando bodegas...</option></select></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium small text-muted" for="mermaBuscarProducto">Buscar producto</label>
+                        <input class="form-control mb-2" type="search" id="mermaBuscarProducto"
+                               autocomplete="off" maxlength="200" placeholder="Nombre, SKU o código de barras">
+                        <label class="visually-hidden" for="mermaProducto">Producto seleccionado</label>
+                        <select class="form-select bg-light" id="mermaProducto" aria-describedby="mermaStockDisponible" required>
+                            <option value="">Selecciona un producto...</option>
+                        </select>
+                        <div class="ss-loss-product-pages mt-2">
+                            <button type="button" id="mermaProductosAnterior" class="btn btn-sm btn-outline-secondary" aria-label="Página anterior de productos" disabled>Anterior</button>
+                            <span id="resumenProductosMerma" class="small text-muted" role="status" aria-live="polite"></span>
+                            <button type="button" id="mermaProductosSiguiente" class="btn btn-sm btn-outline-secondary" aria-label="Página siguiente de productos" disabled>Siguiente</button>
+                        </div>
+                        <p class="small text-muted mt-2 mb-0" id="mermaStockDisponible" role="status">Selecciona un producto para consultar el stock de la bodega elegida.</p>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label fw-medium small text-muted" for="mermaCantidad">Cantidad a dar de baja</label>
+                            <input type="number" class="form-control" id="mermaCantidad" min="1" max="2147483647" step="1" inputmode="numeric" required>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label fw-medium small text-muted" for="mermaMotivo">Motivo de Baja</label>
+                            <select class="form-select" id="mermaMotivo" required>
+                                <option value="DAÑO">Daño en Bodega</option>
+                                <option value="VENCIDO">Producto Vencido</option>
+                                <option value="EXTRAVIO">Pérdida/Extravío</option>
+                                <option value="DEFECTO">Falla de Fábrica</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-medium small text-muted" for="mermaObservacion">Observaciones / Evidencia</label>
+                        <textarea class="form-control" id="mermaObservacion" rows="2" maxlength="1000" placeholder="Ej: Empaque roto por humedad en pasillo 4..." required></textarea>
+                    </div>
+                    <p id="mermaResumenConfirmacion" class="alert alert-info small" role="status" aria-live="polite">Selecciona un producto e indica la cantidad a descontar.</p>
+                    <div id="errorNuevaMerma" class="alert alert-danger d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="btnGuardarMerma" class="btn btn-danger fw-bold py-2" disabled>
+                        Confirmar merma
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalDetalleMerma" tabindex="-1" aria-labelledby="tituloDetalleMerma" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title h6 fw-bold" id="tituloDetalleMerma">Detalle de la merma</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="estadoDetalleMerma" role="status">Cargando detalle...</p>
+                <dl id="datosDetalleMerma" class="ss-loss-detail d-none">
+                    <dt>Registro</dt><dd id="detalleMermaId"></dd>
+                    <dt>Producto</dt><dd id="detalleMermaProducto"></dd>
+                    <dt>SKU</dt><dd id="detalleMermaSku"></dd>
+                    <dt>Cantidad descontada</dt><dd id="detalleMermaCantidad"></dd>
+                    <dt>Motivo</dt><dd id="detalleMermaMotivo"></dd>
+                    <dt>Observación</dt><dd id="detalleMermaObservacion"></dd>
+                    <dt>Fecha / hora</dt><dd id="detalleMermaFecha"></dd>
+                    <dt>Responsable</dt><dd id="detalleMermaResponsable"></dd>
+                    <dt>Bodega</dt><dd id="detalleMermaBodega"></dd>
+                    <dt>Estado</dt><dd id="detalleMermaEstado"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/mermas.js' %}?v=sesion-1" defer></script>
+{% endblock %}
+

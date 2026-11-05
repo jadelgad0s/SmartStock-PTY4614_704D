@@ -1,0 +1,115 @@
+{% extends 'bodegas.html' %}
+{% load static %}
+{% block title %}Ubicaciones físicas - SmartStock{% endblock %}
+{% block extra_head %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/ubicaciones.css' %}?v=2">{% endblock %}
+{% block bodega_contenido %}
+<div class="ss-locations">
+    <a href="/bodegas/" class="small d-inline-block mb-3">← Volver a Bodegas</a>
+    <div class="ss-bodegas-heading"><div><h4 class="fw-bold mb-1">Ubicaciones físicas</h4><p class="small text-muted mb-0">Organiza tu bodega y encuentra dónde guardar cada producto.</p></div></div>
+    <div id="errorUbicaciones" class="alert alert-danger" role="alert" hidden></div>
+    <button type="button" class="btn btn-outline-secondary mb-3" id="reintentarUbicaciones" hidden>Reintentar carga</button>
+    <div id="panelUbicaciones" hidden>
+        <div class="ss-location-context">
+            <div><label for="bodegaUbicaciones">Bodega</label><select id="bodegaUbicaciones" class="form-select" disabled><option value="">Cargando bodegas…</option></select></div>
+            <p id="estadoBodegaUbicaciones" class="small text-muted mb-0" role="status"></p>
+        </div>
+        <p class="small text-muted">Las ubicaciones indican dónde encontrar los productos. El stock se gestiona por bodega.</p>
+        <section aria-labelledby="tituloEstructura">
+            <h5 id="tituloEstructura" class="fw-bold">Estructura de la bodega</h5>
+            <p class="small text-muted">Sigue los cuatro pasos para elegir o crear una ubicación.</p>
+            <div class="ss-location-grid">
+                <details id="paso-pasillos" class="card ss-location-step" data-recurso="pasillos" open>
+                    <summary id="resumen-pasillos" class="ss-location-summary" aria-expanded="true" aria-controls="contenido-pasillos">
+                        <span class="ss-location-step-title"><span class="ss-location-number">1</span>Pasillo</span>
+                        <span id="seleccion-pasillos" class="ss-location-selected">Pendiente</span><i class="fa-solid fa-chevron-down ss-location-chevron" aria-hidden="true"></i>
+                    </summary>
+                    <div id="contenido-pasillos" class="ss-location-step-body">
+                        <div id="buscador-pasillos" hidden><label for="buscar-pasillos" class="visually-hidden">Buscar código de pasillo</label><input id="buscar-pasillos" class="form-control form-control-sm" type="search" placeholder="Buscar código" maxlength="20" aria-label="Buscar código de pasillo" disabled></div>
+                        <label for="elegir-pasillos" class="visually-hidden">Seleccionar pasillo</label><select id="elegir-pasillos" class="form-select" aria-describedby="estado-pasillos" disabled><option value="">Selecciona una bodega</option></select>
+                        <p id="estado-pasillos" class="small text-muted mb-0" role="status" hidden></p>
+                        <div id="paginas-pasillos" class="ss-location-pages" hidden><button id="anterior-pasillos" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página anterior de pasillo">←</button><span id="numeracion-pasillos" class="small"></span><button id="siguiente-pasillos" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página siguiente de pasillo">→</button></div>
+                        <button id="reintentar-pasillos" type="button" class="btn btn-sm btn-outline-secondary" hidden>Reintentar carga</button>
+                        <div class="ss-location-tools"><button type="button" class="btn btn-sm btn-outline-primary" data-nuevo="pasillos" hidden><i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Crear pasillo</button>
+                            <details id="administrar-pasillos" class="ss-location-manage" hidden><summary class="btn btn-sm btn-outline-secondary" aria-label="Administrar pasillo" title="Administrar pasillo"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i><span class="visually-hidden">Administrar pasillo</span></summary><div class="ss-location-manage-panel"><button type="button" class="btn btn-sm btn-outline-secondary" data-editar="pasillos" hidden>Editar código</button><button type="button" class="btn btn-sm btn-outline-danger" data-eliminar="pasillos" hidden>Eliminar</button></div></details>
+                        </div>
+                    </div>
+                </details>
+                <details id="paso-estanterias" class="card ss-location-step" data-recurso="estanterias" open>
+                    <summary id="resumen-estanterias" class="ss-location-summary" aria-expanded="true" aria-controls="contenido-estanterias">
+                        <span class="ss-location-step-title"><span class="ss-location-number">2</span>Estantería</span>
+                        <span id="seleccion-estanterias" class="ss-location-selected">Pendiente</span><i class="fa-solid fa-chevron-down ss-location-chevron" aria-hidden="true"></i>
+                    </summary>
+                    <div id="contenido-estanterias" class="ss-location-step-body">
+                        <div id="buscador-estanterias" hidden><label for="buscar-estanterias" class="visually-hidden">Buscar código de estantería</label><input id="buscar-estanterias" class="form-control form-control-sm" type="search" placeholder="Buscar código" maxlength="20" aria-label="Buscar código de estantería" disabled></div>
+                        <label for="elegir-estanterias" class="visually-hidden">Seleccionar estantería</label><select id="elegir-estanterias" class="form-select" aria-describedby="estado-estanterias" disabled><option value="">Selecciona un pasillo</option></select>
+                        <p id="estado-estanterias" class="small text-muted mb-0" role="status" hidden></p>
+                        <div id="paginas-estanterias" class="ss-location-pages" hidden><button id="anterior-estanterias" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página anterior de estantería">←</button><span id="numeracion-estanterias" class="small"></span><button id="siguiente-estanterias" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página siguiente de estantería">→</button></div>
+                        <button id="reintentar-estanterias" type="button" class="btn btn-sm btn-outline-secondary" hidden>Reintentar carga</button>
+                        <div class="ss-location-tools"><button type="button" class="btn btn-sm btn-outline-primary" data-nuevo="estanterias" hidden><i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Crear estantería</button>
+                            <details id="administrar-estanterias" class="ss-location-manage" hidden><summary class="btn btn-sm btn-outline-secondary" aria-label="Administrar estantería" title="Administrar estantería"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i><span class="visually-hidden">Administrar estantería</span></summary><div class="ss-location-manage-panel"><button type="button" class="btn btn-sm btn-outline-secondary" data-editar="estanterias" hidden>Editar código</button><button type="button" class="btn btn-sm btn-outline-danger" data-eliminar="estanterias" hidden>Eliminar</button></div></details>
+                        </div>
+                    </div>
+                </details>
+                <details id="paso-niveles" class="card ss-location-step" data-recurso="niveles" open>
+                    <summary id="resumen-niveles" class="ss-location-summary" aria-expanded="true" aria-controls="contenido-niveles">
+                        <span class="ss-location-step-title"><span class="ss-location-number">3</span>Nivel</span>
+                        <span id="seleccion-niveles" class="ss-location-selected">Pendiente</span><i class="fa-solid fa-chevron-down ss-location-chevron" aria-hidden="true"></i>
+                    </summary>
+                    <div id="contenido-niveles" class="ss-location-step-body">
+                        <div id="buscador-niveles" hidden><label for="buscar-niveles" class="visually-hidden">Buscar código de nivel</label><input id="buscar-niveles" class="form-control form-control-sm" type="search" placeholder="Buscar código" maxlength="20" aria-label="Buscar código de nivel" disabled></div>
+                        <label for="elegir-niveles" class="visually-hidden">Seleccionar nivel</label><select id="elegir-niveles" class="form-select" aria-describedby="estado-niveles" disabled><option value="">Selecciona una estantería</option></select>
+                        <p id="estado-niveles" class="small text-muted mb-0" role="status" hidden></p>
+                        <div id="paginas-niveles" class="ss-location-pages" hidden><button id="anterior-niveles" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página anterior de nivel">←</button><span id="numeracion-niveles" class="small"></span><button id="siguiente-niveles" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página siguiente de nivel">→</button></div>
+                        <button id="reintentar-niveles" type="button" class="btn btn-sm btn-outline-secondary" hidden>Reintentar carga</button>
+                        <div class="ss-location-tools"><button type="button" class="btn btn-sm btn-outline-primary" data-nuevo="niveles" hidden><i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Crear nivel</button>
+                            <details id="administrar-niveles" class="ss-location-manage" hidden><summary class="btn btn-sm btn-outline-secondary" aria-label="Administrar nivel" title="Administrar nivel"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i><span class="visually-hidden">Administrar nivel</span></summary><div class="ss-location-manage-panel"><button type="button" class="btn btn-sm btn-outline-secondary" data-editar="niveles" hidden>Editar código</button><button type="button" class="btn btn-sm btn-outline-danger" data-eliminar="niveles" hidden>Eliminar</button></div></details>
+                        </div>
+                    </div>
+                </details>
+                <details id="paso-espacios" class="card ss-location-step" data-recurso="espacios" open>
+                    <summary id="resumen-espacios" class="ss-location-summary" aria-expanded="true" aria-controls="contenido-espacios">
+                        <span class="ss-location-step-title"><span class="ss-location-number">4</span>Ubicación</span>
+                        <span id="seleccion-espacios" class="ss-location-selected">Pendiente</span><i class="fa-solid fa-chevron-down ss-location-chevron" aria-hidden="true"></i>
+                    </summary>
+                    <div id="contenido-espacios" class="ss-location-step-body">
+                        <div id="buscador-espacios" hidden><label for="buscar-espacios" class="visually-hidden">Buscar código de ubicación</label><input id="buscar-espacios" class="form-control form-control-sm" type="search" placeholder="Buscar código" maxlength="20" aria-label="Buscar código de ubicación" disabled></div>
+                        <label for="elegir-espacios" class="visually-hidden">Seleccionar ubicación</label><select id="elegir-espacios" class="form-select" aria-describedby="estado-espacios" disabled><option value="">Selecciona un nivel</option></select>
+                        <p id="estado-espacios" class="small text-muted mb-0" role="status" hidden></p>
+                        <div id="paginas-espacios" class="ss-location-pages" hidden><button id="anterior-espacios" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página anterior de ubicación">←</button><span id="numeracion-espacios" class="small"></span><button id="siguiente-espacios" type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="Página siguiente de ubicación">→</button></div>
+                        <button id="reintentar-espacios" type="button" class="btn btn-sm btn-outline-secondary" hidden>Reintentar carga</button>
+                        <div class="ss-location-tools"><button type="button" class="btn btn-sm btn-outline-primary" data-nuevo="espacios" hidden><i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Crear ubicación</button>
+                            <details id="administrar-espacios" class="ss-location-manage" hidden><summary class="btn btn-sm btn-outline-secondary" aria-label="Administrar ubicación" title="Administrar ubicación"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i><span class="visually-hidden">Administrar ubicación</span></summary><div class="ss-location-manage-panel"><button type="button" class="btn btn-sm btn-outline-secondary" data-editar="espacios" hidden>Editar código</button><button type="button" class="btn btn-sm btn-outline-danger" data-eliminar="espacios" hidden>Eliminar</button></div></details>
+                        </div>
+                    </div>
+                </details>
+            </div>
+            <p id="rutaUbicaciones" class="ss-location-path small" role="status" aria-live="polite">Selecciona una ubicación.</p>
+        </section>
+        <section aria-labelledby="tituloAsignaciones" class="mt-4">
+            <div class="ss-bodegas-heading mb-3"><div><h5 id="tituloAsignaciones" class="fw-bold mb-1">Productos y ubicaciones</h5><p id="contextoProducto" class="small text-muted mb-0" hidden></p><button id="todosProductosUbicaciones" type="button" class="btn btn-sm btn-link px-0" hidden>Ver todos los productos</button></div><button id="asignarProductoUbicacion" type="button" class="btn btn-primary" aria-describedby="rutaUbicaciones" disabled hidden><i class="fa-solid fa-location-dot me-2" aria-hidden="true"></i>Asignar producto</button></div>
+            <form id="filtrosAsignaciones" class="ss-location-filters" aria-label="Filtrar asignaciones">
+                <div><label for="buscarAsignaciones">Buscar producto o ubicación</label><input id="buscarAsignaciones" class="form-control" type="search" placeholder="Nombre, SKU, código o pasillo" maxlength="200"></div>
+                <label class="ss-location-checkbox"><input id="soloUbicacion" type="checkbox" class="form-check-input" disabled>Solo la ubicación seleccionada</label>
+                <button id="limpiarAsignaciones" type="button" class="btn btn-outline-secondary">Limpiar filtros</button>
+            </form>
+            <div id="errorAsignaciones" class="alert alert-danger" role="alert" hidden></div><button id="reintentarAsignaciones" type="button" class="btn btn-outline-secondary mb-3" hidden>Reintentar listado</button>
+            <div class="card ss-location-results"><div class="table-responsive"><table class="table table-custom mb-0"><caption class="visually-hidden">Referencias de ubicación de los productos en la bodega seleccionada</caption><thead><tr><th>Producto</th><th>Ubicación</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="filasAsignaciones" aria-busy="false"></tbody></table></div><div class="ss-bodegas-footer"><span id="resumenAsignaciones" class="small text-muted" role="status" tabindex="-1"></span><nav id="paginasAsignaciones" class="ss-location-pages" aria-label="Páginas de productos y ubicaciones"></nav></div></div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+{% block bodega_modales %}
+<div id="modalCodigoUbicacion" class="modal fade ss-warehouse-modal" tabindex="-1" aria-labelledby="tituloCodigoUbicacion" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloCodigoUbicacion" class="modal-title">Crear estructura</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formCodigoUbicacion"><div class="modal-body"><p id="padreCodigoUbicacion" class="small text-muted"></p><div id="errorCodigoUbicacion" class="alert alert-danger" role="alert" hidden></div><label for="codigoUbicacion">Código</label><input id="codigoUbicacion" class="form-control" required maxlength="20" autocomplete="off" placeholder="Ej.: A-01"><p class="small text-muted mt-2 mb-0">El código debe ser único dentro de su pasillo, estantería o nivel.</p></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button id="guardarCodigoUbicacion" type="submit" class="btn btn-primary">Guardar</button></div></form>
+</div></div></div>
+<div id="modalAsignarUbicacion" class="modal fade ss-warehouse-modal" tabindex="-1" aria-labelledby="tituloAsignarUbicacion" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloAsignarUbicacion" class="modal-title">Asignar producto</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formAsignarUbicacion"><div class="modal-body"><p class="small">Ubicación de destino</p><strong id="destinoAsignarUbicacion" class="d-block mb-3"></strong><div id="errorAsignarUbicacion" class="alert alert-danger" role="alert" hidden></div><div id="busquedaAsignarUbicacion"><label for="buscarProductoUbicacion">Buscar producto</label><input id="buscarProductoUbicacion" class="form-control mb-3" type="search" maxlength="200" placeholder="Nombre, SKU o código de barras"></div><label for="productoAsignarUbicacion">Producto</label><select id="productoAsignarUbicacion" class="form-select" disabled><option value="">Busca un producto</option></select><div class="ss-location-pages mt-2"><button id="anteriorProductoUbicacion" type="button" class="btn btn-sm btn-outline-secondary" disabled>Anterior</button><span id="estadoProductoUbicacion" class="small" role="status"></span><button id="siguienteProductoUbicacion" type="button" class="btn btn-sm btn-outline-secondary" disabled>Siguiente</button></div><button id="reintentarProductoUbicacion" type="button" class="btn btn-sm btn-outline-secondary mt-2" hidden>Reintentar productos</button><p class="small text-muted mt-3 mb-0">Un producto puede tener varias ubicaciones. Esta asignación conserva las unidades registradas en la bodega.</p></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button id="guardarAsignacionUbicacion" type="submit" class="btn btn-primary" disabled>Asignar ubicación</button></div></form>
+</div></div></div>
+<div id="modalRetirarUbicacion" class="modal fade ss-warehouse-modal" tabindex="-1" aria-labelledby="tituloRetirarUbicacion" aria-hidden="true" data-bs-backdrop="static"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 id="tituloRetirarUbicacion" class="modal-title">Confirmar eliminación</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <form id="formRetirarUbicacion"><div class="modal-body"><p id="descripcionRetirarUbicacion"></p><div id="errorRetirarUbicacion" class="alert alert-danger" role="alert" hidden></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button id="confirmarRetirarUbicacion" type="submit" class="btn btn-danger">Confirmar</button></div></form>
+</div></div></div>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'js/ubicaciones.js' %}?v=sesion-1" defer></script>{% endblock %}

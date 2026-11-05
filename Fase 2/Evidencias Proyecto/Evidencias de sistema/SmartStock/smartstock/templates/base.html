@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartStock{% endblock %}</title>
+    <link rel="icon" href="{% static 'branding/smartstock-mark.png' %}" type="image/png" sizes="48x48">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --teal-600: #0f766e;
+            --teal-700: #0f5c56;
+            --teal-50: #f0fdfa;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-600: #475569;
+            --slate-800: #1e293b;
+        }
+        body { background-color: var(--slate-50); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow-x: hidden; color: var(--slate-800); }
+        
+        .bg-sidebar { background-color: #ffffff; border-right: 1px solid var(--slate-200); }
+        .bg-topbar { background-color: #ffffff; border-bottom: 1px solid var(--slate-200); }
+        .bg-primary-gradient { background: linear-gradient(135deg, var(--teal-600) 0%, var(--teal-700) 100%); }
+        
+        .text-sidebar-muted { color: var(--slate-600); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 1.5rem; margin-bottom: 0.5rem; padding-left: 1rem; }
+        .nav-link.sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--slate-600);
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+        .nav-link.sidebar-item:hover { background-color: var(--slate-100); color: var(--slate-800); }
+        .nav-link.sidebar-item.active { background-color: var(--teal-50); color: var(--teal-600); font-weight: 600; }
+        .nav-link.sidebar-item > .sidebar-icon { flex: 0 0 1.25rem; text-align: center; opacity: 0.8; }
+        
+        .card { border: 1px solid var(--slate-200); border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); background-color: #ffffff; }
+        .card-header { background-color: #ffffff; border-bottom: 1px solid var(--slate-200); font-weight: 600; padding: 1rem 1.25rem; border-radius: 10px 10px 0 0 !important; }
+        
+        .kpi-title { font-size: 0.75rem; color: var(--slate-600); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kpi-value { font-size: 2rem; font-weight: 700; color: var(--slate-800); letter-spacing: -0.02em; }
+        
+        .table-custom th { color: var(--slate-600); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 2px solid var(--slate-200); background-color: var(--slate-50); padding: 0.75rem 1rem; }
+        .table-custom td { vertical-align: middle; font-size: 0.875rem; border-bottom: 1px solid var(--slate-100); padding: 0.75rem 1rem; }
+        
+        .btn-primary { background-color: var(--teal-600); border-color: var(--teal-600); box-shadow: 0 1px 2px rgba(15, 118, 110, 0.2); }
+        .btn-primary:hover { background-color: #115e59; border-color: #115e59; }
+        .text-primary { color: var(--teal-600) !important; }
+        .bg-primary-soft { background-color: var(--teal-50) !important; color: var(--teal-600) !important; }
+        
+        .badge-soft-success { background-color: #dcfce7; color: #166534; font-weight: 600; padding: 0.35em 0.65em; }
+        .badge-soft-danger { background-color: #fee2e2; color: #991b1b; font-weight: 600; padding: 0.35em 0.65em; }
+        .badge-soft-warning { background-color: #fef3c7; color: #92400e; font-weight: 600; padding: 0.35em 0.65em; }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=9">
+    <script>
+      // Aplicar la preferencia antes del primer pintado de los módulos.
+      try {
+        if (/^\/(dashboard|inicio-bodega|productos|bodegas|ubicaciones|alertas-sms|movimientos|transferencias|mermas|auditoria|usuarios|reportes)\/?$/.test(window.location.pathname)
+            && localStorage.getItem('smartstock-theme') === 'dark') {
+          document.documentElement.setAttribute('data-bs-theme', 'dark');
+        }
+      } catch (_) {}
+    </script>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=2">
+    <style>
+        .ss-app-layout:not([data-ss-autorizado]), [data-ss-menu-denegado] { display: none !important; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <form id="ss-cerrar-sesion" method="post" action="{% url 'logout_web' %}" hidden>
+        {% csrf_token %}
+        <input type="hidden" name="refresh">
+    </form>
+    {% endif %}
+    <section id="ss-acceso-estado" class="container py-5" aria-label="Acceso a SmartStock" hidden>
+        <p id="ss-acceso-texto" role="status"></p>
+        <button id="ss-acceso-reintentar" type="button" class="btn btn-primary" hidden>Reintentar</button>
+        <button id="ss-acceso-salir" type="button" class="btn btn-outline-secondary">Volver al inicio de sesión</button>
+    </section>
+    {% block content %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/theme.js' %}?v=1" defer></script>
+    <script src="{% static 'js/responsive.js' %}?v=2" defer></script>
+    <script src="{% static 'js/notificaciones.js' %}?v=roles-1" defer></script>
+    <script src="{% static 'js/reportes_base.js' %}?v=roles-1" defer></script>
+    <script src="{% static 'js/sms_base.js' %}?v=roles-1" defer></script>
+    <script src="{% static 'js/navegacion.js' %}?v=2" defer></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

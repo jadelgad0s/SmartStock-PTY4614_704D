@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Auditoría del sistema — SmartStock</title>
+    <style>
+        @page { size: A4 landscape; margin: 12mm; }
+        body { color: #111827; background: white; font: 11px/1.4 Arial, sans-serif; margin: 0; }
+        h1 { font-size: 20px; margin: 0 0 8px; }
+        p { margin: 4px 0; }
+        .metadata { margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #cbd5e1; padding: 6px; vertical-align: top; overflow-wrap: anywhere; }
+        th { background: #f1f5f9; text-align: left; }
+        thead { display: table-header-group; }
+        tr { break-inside: avoid; }
+        .descripcion { white-space: pre-wrap; }
+        .accion { display: inline-block; padding: 3px 5px; border-radius: 4px; font-weight: bold; background: #e2e8f0; color: #334155; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .accion-create, .accion-reactivate { background: #dcfce7; color: #166534; }
+        .accion-deactivate { background: #ffedd5; color: #9a3412; }
+        .accion-update { background: #ccfbf1; color: #115e59; }
+        .accion-delete, .accion-login_failed { background: #fee2e2; color: #991b1b; }
+        .accion-login { background: #dbeafe; color: #1e40af; }
+        footer { margin-top: 14px; font-size: 10px; }
+    </style>
+</head>
+<body>
+    <h1>SmartStock — Auditoría del sistema</h1>
+    <div class="metadata">
+        <p><strong>Generado:</strong> {{ generado }} · {{ zona_horaria }}</p>
+        <p><strong>Generado por:</strong> {{ generado_por }}</p>
+        <p><strong>Total:</strong> {{ total }} eventos · Más recientes primero</p>
+        {% for etiqueta, valor in filtros %}<p><strong>{{ etiqueta }}:</strong> {{ valor }}</p>{% endfor %}
+    </div>
+    <table>
+        <thead><tr>
+            <th style="width: 5%;">ID</th><th style="width: 13%;">Fecha / hora</th>
+            <th style="width: 17%;">Usuario</th><th style="width: 12%;">Acción</th>
+            <th style="width: 10%;">Módulo</th><th>Detalle del evento</th>
+        </tr></thead>
+        <tbody>
+            {% for e in registros %}
+            <tr>
+                <td>#{{ e.id }}</td><td>{{ e.fecha }}</td>
+                <td>{{ e.usuario }}{% if e.usuario_email %}<br>{{ e.usuario_email }}{% endif %}</td>
+                <td><span class="accion accion-{{ e.accion|lower }}">{{ e.accion_etiqueta }}</span></td><td>{{ e.modelo }}</td><td class="descripcion">{{ e.descripcion }}</td>
+            </tr>
+            {% empty %}<tr><td colspan="6">No hay eventos para estos filtros.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    <footer>Documento generado por SmartStock · Uso interno</footer>
+</body>
+</html>

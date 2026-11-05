@@ -1,0 +1,56 @@
+{% extends 'bodegas.html' %}
+{% load static %}
+{% block title %}Inicio de bodega - SmartStock{% endblock %}
+{% block bodegas_enlace_activo %}{% endblock %}
+{% block enlace_inicio_bodega %}{% include 'componentes/enlace_inicio_bodega.html' with activo=True only %}{% endblock %}
+{% block bodega_contenido %}
+<section aria-labelledby="tituloInicioBodega">
+    <div class="ss-bodegas-heading">
+        <div>
+            <h1 id="tituloInicioBodega" class="h4 fw-bold mb-1">Inicio de bodega</h1>
+            <p class="small text-muted mb-0">Revisa el stock que necesita atención y accede a las operaciones de bodega.</p>
+        </div>
+        <div>
+            <label for="inicioBodegaSelector" class="form-label">Bodega</label>
+            <select id="inicioBodegaSelector" class="form-select" disabled>
+                <option>Consultando bodegas…</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap mb-4" aria-label="Operaciones de bodega">
+        <a href="/movimientos/" class="btn btn-primary" data-operacion hidden>Registrar movimiento</a>
+        <a href="/ubicaciones/" class="btn btn-outline-secondary" data-operacion hidden>Ubicaciones</a>
+        <a href="/transferencias/" class="btn btn-outline-secondary" data-operacion hidden>Transferencias</a>
+        <a href="/mermas/" class="btn btn-outline-secondary" data-operacion hidden>Mermas</a>
+        <a href="/reportes/" class="btn btn-outline-secondary" data-operacion hidden>Reportes</a>
+    </div>
+
+    <p id="inicioBodegaEstado" class="small text-muted" role="status">Cargando existencias…</p>
+    <div id="inicioBodegaError" class="alert alert-danger" role="alert" hidden></div>
+    <button id="inicioBodegaReintentar" class="btn btn-outline-secondary mb-3" type="button" hidden>Reintentar consulta</button>
+    <div id="inicioBodegaResumen" hidden>
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <div class="card p-3 h-100">
+                    <span class="small text-muted">Productos con stock bajo</span>
+                    <strong id="inicioBodegaBajo" class="fs-3"></strong>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card p-3 h-100">
+                    <span class="small text-muted">Productos agotados</span>
+                    <strong id="inicioBodegaAgotado" class="fs-3"></strong>
+                </div>
+            </div>
+        </div>
+        <section class="card p-3" aria-labelledby="inicioBodegaTituloAlertas">
+            <h2 id="inicioBodegaTituloAlertas" class="h5 fw-bold mb-2">Stock que requiere atención</h2>
+            <p id="inicioBodegaResumenAlertas" class="small text-muted mb-2"></p>
+            <ul id="inicioBodegaAlertas" class="list-group list-group-flush"></ul>
+        </section>
+    </div>
+</section>
+{% endblock %}
+{% block bodega_modales %}{% endblock %}
+{% block extra_scripts %}<script src="{% static 'js/inicio_bodega.js' %}?v=sesion-1" defer></script>{% endblock %}
